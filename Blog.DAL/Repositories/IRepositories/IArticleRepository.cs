@@ -5,9 +5,10 @@ namespace Blog.DAL.Repositories.IRepositories
     public interface IArticleRepository
     {
         Task Add(Article article);
-        Task<Article?> Get(Guid id);
+        Task<Article?> Get(int articleId);
         Task<Article[]> GetArticles();
-        Task Update(Article article);
-        Task Delete(Article article);
+        Task<Article[]> GetArticles(int userId);
+        Task Update(int articleId, Article article);
+        Task Delete(int articleId);
     }
 }

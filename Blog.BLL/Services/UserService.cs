@@ -33,8 +33,8 @@ namespace Blog.BLL.Services
         /// <returns></returns>
         public async Task<IdentityResult> Register(AddUserRequest addUserRequest)
         {
-            var entity = await _userRepository.GetByLogin(addUserRequest.Login);
-            if (entity != null)
+            var user = await _userRepository.GetByLogin(addUserRequest.Login);
+            if (user != null)
             {
                 return IdentityResult.Failed(new IdentityError
                 {
@@ -42,8 +42,8 @@ namespace Blog.BLL.Services
                 });
             }
 
-            entity = await _userRepository.GetByEMail(addUserRequest.Email);
-            if (entity != null)
+            user = await _userRepository.GetByEMail(addUserRequest.Email);
+            if (user != null)
             {
                 return IdentityResult.Failed(new IdentityError
                 {
@@ -51,7 +51,7 @@ namespace Blog.BLL.Services
                 });
             }
 
-            var user = _mapper.Map<User>(addUserRequest);
+            user = _mapper.Map<User>(addUserRequest);
             await _userRepository.Add(user);
             return IdentityResult.Success;
         }
@@ -61,10 +61,10 @@ namespace Blog.BLL.Services
         /// </summary>
         /// <param name="updateUserRequest"></param>
         /// <returns></returns>
-        public async Task<IdentityResult> Update(UpdateUserRequest updateUserRequest)
+        public async Task<IdentityResult> Update(int userId, UpdateUserRequest updateUserRequest)
         {
             var user = _mapper.Map<User>(updateUserRequest);
-            await _userRepository.Update(user);
+            await _userRepository.Update(userId, user);
             return IdentityResult.Success;
         }
 
@@ -74,8 +74,18 @@ namespace Blog.BLL.Services
         public async Task<GetUserResponse[]> GetAll()
         {
             var users = await _userRepository.GetUsers();
-            var usersResponse = _mapper.Map<User[], GetUserResponse[]>(users);
-            return usersResponse;
+            var getUsersResponse = _mapper.Map<User[], GetUserResponse[]>(users);
+            return getUsersResponse;
+        }
+
+        /// <summary>
+        /// Логика сервиса получения пользователя по Идентификатору
+        /// </summary>
+        public async Task<GetUserResponse> Get(int userId)
+        {
+            var user = await _userRepository.Get(userId);
+            var getUserResponse = _mapper.Map<GetUserResponse>(user);
+            return getUserResponse;
         }
 
         /// <summary>
@@ -83,18 +93,18 @@ namespace Blog.BLL.Services
         /// </summary>
         /// <param name="deleteUserRequest"></param>
         /// <returns></returns>
-        public async Task<IdentityResult> Delete(DeleteUserRequest deleteUserRequest)
+        public async Task<IdentityResult> Delete(int userId)
         {
-            var entity = await _userRepository.GetByLogin(deleteUserRequest.Login);
+            var entity = await _userRepository.Get(userId);
             if (entity == null)
             {
                 return IdentityResult.Failed(new IdentityError
                 {
-                    Description = $"Пользователь с таким Login:{deleteUserRequest.Login} не существует"
+                    Description = $"Пользователь {userId} не существует"
                 });
             }
 
-            await _userRepository.Delete(entity);
+            await _userRepository.Delete(userId);
             return IdentityResult.Success;
         }
     }

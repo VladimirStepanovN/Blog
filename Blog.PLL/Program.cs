@@ -20,6 +20,8 @@ namespace Blog.PLL
             var connectionSettings = builder.Configuration.GetSection("ConnectionStrings").Get<ConnectionSettings>();
             builder.Services.AddSingleton(connectionSettings);
             builder.Services.AddSingleton<IUserService, UserService>();
+            builder.Services.AddSingleton<IArticleService, ArticleService>();
+            builder.Services.AddSingleton<ICommentService, CommentService>();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             //----------------------

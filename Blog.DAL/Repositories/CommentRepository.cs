@@ -23,40 +23,44 @@ namespace Blog.DAL.Repositories
         /// <returns></returns>
         public async Task Add(Comment comment)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                var entry = _context.Entry(comment);
+                var entry = context.Entry(comment);
                 if (entry.State == EntityState.Detached)
-                    await _context.Comments.AddAsync(comment);
+                    await context.Comments.AddAsync(comment);
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
         }
 
         /// <summary>
         /// Удаляет существующий комментарий
         /// </summary>
-        /// <param name="comment"></param>
+        /// <param name="commentId"></param>
         /// <returns></returns>
-        public async Task Delete(Comment comment)
+        public async Task Delete(int commentId)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                _context.Comments.Remove(comment);
-                await _context.SaveChangesAsync();
+                var comment = await context.Comments.FirstOrDefaultAsync(c => c.CommentId == commentId);
+                if (comment != null)
+                {
+                    context.Comments.Remove(comment);
+                    await context.SaveChangesAsync();
+                }
             }
         }
 
         /// <summary>
         /// Поиск комментария по Идентификатору
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="commentId"></param>
         /// <returns></returns>
-        public async Task<Comment?> Get(Guid id)
+        public async Task<Comment?> Get(int commentId)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                return await _context.Comments.Where(c => c.CommentId == id).FirstOrDefaultAsync();
+                return await context.Comments.Where(c => c.CommentId == commentId).FirstOrDefaultAsync();
             }
         }
 
@@ -66,26 +70,27 @@ namespace Blog.DAL.Repositories
         /// <returns></returns>
         public async Task<Comment[]> GetComments()
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                return await _context.Comments.ToArrayAsync();
+                return await context.Comments.ToArrayAsync();
             }
         }
 
         /// <summary>
         /// Редактирование существующего комментария
         /// </summary>
+        /// <param name="commentId"></param>
         /// <param name="comment"></param>
         /// <returns></returns>
-        public async Task Update(Comment comment)
+        public async Task Update(int commentId, Comment comment)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                await _context.Comments.Where(c => c.CommentId == comment.CommentId)
+                await context.Comments.Where(c => c.CommentId == commentId)
                     .ExecuteUpdateAsync(s => s
                     .SetProperty(c => c.Content, a => comment.Content));
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
         }
     }

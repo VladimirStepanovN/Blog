@@ -23,40 +23,44 @@ namespace Blog.DAL.Repositories
         /// <returns></returns>
         public async Task Add(User user)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                var entry = _context.Entry(user);
+                var entry = context.Entry(user);
                 if (entry.State == EntityState.Detached)
-                    await _context.Users.AddAsync(user);
+                    await context.Users.AddAsync(user);
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
         }
 
         /// <summary>
         /// Удаление существующего пользователя
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="userId"></param>
         /// <returns></returns>
-        public async Task Delete(User user)
+        public async Task Delete(int userId)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
+                var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+                if (user != null)
+                {
+                    context.Users.Remove(user);
+                    await context.SaveChangesAsync();
+                }
             }
         }
 
         /// <summary>
         /// Поиск пользователя по Идентификатору
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="userId"></param>
         /// <returns></returns>
-        public async Task<User?> Get(Guid id)
+        public async Task<User?> Get(int userId)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                return await _context.Users.Where(u => u.UserId == id).FirstOrDefaultAsync();
+                return await context.Users.Where(u => u.UserId == userId).FirstOrDefaultAsync();
             }
         }
 
@@ -66,50 +70,56 @@ namespace Blog.DAL.Repositories
         /// <returns></returns>
         public async Task<User[]> GetUsers()
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                return await _context.Users.ToArrayAsync();
+                return await context.Users.ToArrayAsync();
             }
         }
 
         /// <summary>
         /// Поиск пользователя по Логину. 
-        /// В качестве логина используется eMail
         /// </summary>
         /// <param name="login"></param>
         /// <returns></returns>
         public async Task<User?> GetByLogin(string login)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                return await _context.Users.Where(u => u.Login == login).FirstOrDefaultAsync();
+                return await context.Users.Where(u => u.Login == login).FirstOrDefaultAsync();
             }
         }
 
         /// <summary>
         /// Обновление данных пользователя
         /// </summary>
+        /// <param name="userId"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public async Task Update(User user)
+        public async Task Update(int userId, User user)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                await _context.Users.Where(u => u.UserId == user.UserId)
+                await context.Users.Where(u => u.UserId == userId)
                 .ExecuteUpdateAsync(s => s
                 .SetProperty(u => u.FirstName, u => user.FirstName)
                 .SetProperty(u => u.LastName, u => user.LastName)
-                .SetProperty(u => u.Email, u => user.Email));
+                .SetProperty(u => u.Email, u => user.Email)
+                .SetProperty(u => u.Password, u => user.Password));
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
         }
 
+        /// <summary>
+        /// Поиск пользователя по Email
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
         public async Task<User?> GetByEMail(string email)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                return await _context.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
+                return await context.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
             }
         }
     }

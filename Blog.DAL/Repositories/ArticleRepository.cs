@@ -19,44 +19,48 @@ namespace Blog.DAL.Repositories
         /// <summary>
         /// Создает новую статью
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="article"></param>
         /// <returns></returns>
         public async Task Add(Article article)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                var entry = _context.Entry(article);
+                var entry = context.Entry(article);
                 if (entry.State == EntityState.Detached)
-                    await _context.Articles.AddAsync(article);
+                    await context.Articles.AddAsync(article);
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
         }
 
         /// <summary>
         /// Удаляет существующую статью
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="articleId"></param>
         /// <returns></returns>
-        public async Task Delete(Article article)
+        public async Task Delete(int articleId)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                _context.Articles.Remove(article);
-                await _context.SaveChangesAsync();
+                var article = await context.Articles.FirstOrDefaultAsync(a => a.ArticleId == articleId);
+                if (article != null)
+                {
+                    context.Articles.Remove(article);
+                    await context.SaveChangesAsync();
+                }
             }
         }
 
         /// <summary>
         /// Поиск статьи по Идентификатору
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="articleId"></param>
         /// <returns></returns>
-        public async Task<Article?> Get(Guid id)
+        public async Task<Article?> Get(int articleId)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                return await _context.Articles.Where(a => a.ArticleId == id).FirstOrDefaultAsync();
+                return await context.Articles.Where(a => a.ArticleId == articleId).FirstOrDefaultAsync();
             }
         }
 
@@ -66,27 +70,40 @@ namespace Blog.DAL.Repositories
         /// <returns></returns>
         public async Task<Article[]> GetArticles()
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                return await _context.Articles.ToArrayAsync();
+                return await context.Articles.ToArrayAsync();
+            }
+        }
+
+        /// <summary>
+        /// Получение списка статей определенного автора по его Идентификатору
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Article[]> GetArticles(int userId)
+        {
+            await using (var context = new BlogContext(_connectionString))
+            {
+                return await context.Articles.Where(a => a.UserId == userId).ToArrayAsync();
             }
         }
 
         /// <summary>
         /// Обновление существующей статьи
         /// </summary>
+        /// <param name="articleId"></param>
         /// <param name="article"></param>
         /// <returns></returns>
-        public async Task Update(Article article)
+        public async Task Update(int articleId, Article article)
         {
-            await using (BlogContext _context = new BlogContext(_connectionString))
+            await using (var context = new BlogContext(_connectionString))
             {
-                await _context.Articles.Where(a => a.ArticleId == article.ArticleId)
+                await context.Articles.Where(a => a.ArticleId == articleId)
                 .ExecuteUpdateAsync(s => s
                 .SetProperty(a => a.Title, a => article.Title)
                 .SetProperty(a => a.Content, a => article.Content));
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }      
         }
     }

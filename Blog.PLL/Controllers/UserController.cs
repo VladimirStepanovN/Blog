@@ -1,6 +1,7 @@
 ﻿using Blog.BLL.BusinessModels.Requests.UsersRequests;
 using Blog.BLL.Services.IServices;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace Blog.PLL.Controllers
 {
@@ -15,7 +16,7 @@ namespace Blog.PLL.Controllers
             _userService = userService;
         }
 
-
+        //для формы регистрации пользователя
         [HttpGet]
         public async Task<IActionResult> Register()
         {
@@ -30,7 +31,7 @@ namespace Blog.PLL.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("RegisterUser")]
-        public async Task<IActionResult> Register(AddUserRequest addUserRequest)
+        public async Task<IActionResult> Register([FromBody] AddUserRequest addUserRequest)
         {
             var result = await _userService.Register(addUserRequest);
             if (result.Errors.FirstOrDefault() != null)
@@ -48,9 +49,9 @@ namespace Blog.PLL.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("UpdateUser")]
-        public async Task<IActionResult> Update([FromBody] UpdateUserRequest updateUserRequest)
+        public async Task<IActionResult> Update(int userId, [FromBody] UpdateUserRequest updateUserRequest)
         {
-            var result = await _userService.Update(updateUserRequest);
+            var result = await _userService.Update(userId, updateUserRequest);
             return StatusCode(StatusCodes.Status200OK, updateUserRequest);
             //return View();
         }
@@ -74,14 +75,14 @@ namespace Blog.PLL.Controllers
         /// <returns></returns>
         [HttpDelete]
         [Route("DeleteUser")]
-        public async Task<IActionResult> Delete([FromBody] DeleteUserRequest deleteUserRequest)
+        public async Task<IActionResult> Delete(int userId)
         {
-            var result = await _userService.Delete(deleteUserRequest);
+            var result = await _userService.Delete(userId);
             if (result.Errors.FirstOrDefault() != null)
             {
                 return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
             }
-            return StatusCode(StatusCodes.Status200OK, deleteUserRequest);
+            return StatusCode(StatusCodes.Status200OK, $"Пользователь {userId} удалён");
             //return View();
         }
 

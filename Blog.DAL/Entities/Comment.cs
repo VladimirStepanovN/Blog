@@ -8,7 +8,7 @@ namespace Blog.DAL.Entities
     [Table("Comments")]
     public class Comment
     {
-        public Guid CommentId { get; set; }
+        public int CommentId { get; set; }
         public string Content { get; set; }
         public int UserId { get; set; }
         public int ArticleId { get; set; }

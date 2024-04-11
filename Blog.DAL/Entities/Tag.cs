@@ -8,7 +8,7 @@ namespace Blog.DAL.Entities
     [Table("Tags")]
     public class Tag
     {
-        public Guid TagId { get; set; }
+        public int TagId { get; set; }
         public string Name { get; set; }
         public virtual ICollection<Article> Articles { get; set; }
     }

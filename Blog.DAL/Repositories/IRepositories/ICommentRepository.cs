@@ -5,9 +5,9 @@ namespace Blog.DAL.Repositories.IRepositories
     public interface ICommentRepository
     {
         Task Add(Comment comment);
-        Task<Comment?> Get(Guid id);
+        Task<Comment?> Get(int commentId);
         Task<Comment[]> GetComments();
-        Task Update(Comment comment);
-        Task Delete(Comment comment);
+        Task Update(int commentId, Comment comment);
+        Task Delete(int commentId);
     }
 }
