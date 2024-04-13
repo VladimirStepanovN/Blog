@@ -22,6 +22,7 @@ namespace Blog.PLL
             builder.Services.AddSingleton<IUserService, UserService>();
             builder.Services.AddSingleton<IArticleService, ArticleService>();
             builder.Services.AddSingleton<ICommentService, CommentService>();
+            builder.Services.AddSingleton<ITagService, TagService>();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             //----------------------

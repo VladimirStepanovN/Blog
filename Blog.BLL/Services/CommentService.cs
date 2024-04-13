@@ -1,35 +1,97 @@
-﻿using Blog.BLL.BusinessModels.Requests.CommentRequests;
+﻿using AutoMapper;
+using Blog.BLL.BlogConfiguration;
+using Blog.BLL.BusinessModels.Requests.CommentRequests;
 using Blog.BLL.BusinessModels.Responses.CommentResponses;
 using Blog.BLL.Services.IServices;
+using Blog.DAL.Entities;
+using Blog.DAL.Repositories;
+using Blog.DAL.Repositories.IRepositories;
 using Microsoft.AspNetCore.Identity;
 
 namespace Blog.BLL.Services
 {
     public class CommentService : ICommentService
     {
-        public Task<IdentityResult> Create(AddCommentRequest addCommentRequest)
+        private readonly ICommentRepository _commentRepository;
+        private readonly IMapper _mapper;
+
+        public CommentService(ConnectionSettings settings)
         {
-            throw new NotImplementedException();
+            _commentRepository = new CommentRepository(settings.DefaultConnection);
+            var mapperConfig = new MapperConfiguration((v) =>
+            {
+                v.AddProfile(new BusinessMappingProfile());
+            });
+            _mapper = mapperConfig.CreateMapper();
         }
 
-        public Task<IdentityResult> Delete(int commentId)
+        /// <summary>
+        /// Логика сервиса срздания комментария
+        /// </summary>
+        /// <param name="addCommentRequest"></param>
+        /// <returns></returns>
+        public async Task<IdentityResult> Create(AddCommentRequest addCommentRequest)
         {
-            throw new NotImplementedException();
+            var comment = _mapper.Map<Comment>(addCommentRequest);
+            await _commentRepository.Add(comment);
+            return IdentityResult.Success;
         }
 
-        public Task<GetCommentResponse[]> Get(int commentId)
+        /// <summary>
+        /// Логика сервиса удаления комментария
+        /// </summary>
+        /// <param name="commentId"></param>
+        /// <returns></returns>
+        public async Task<IdentityResult> Delete(int commentId)
         {
-            throw new NotImplementedException();
+            var comment = await _commentRepository.Get(commentId);
+            if (comment == null)
+            {
+                return IdentityResult.Failed(new IdentityError
+                {
+                    Description = $"Комментария не существует"
+                });
+            }
+
+            await _commentRepository.Delete(commentId);
+            return IdentityResult.Success;
         }
 
-        public Task<GetCommentResponse[]> GetAll()
+        /// <summary>
+        /// Логика сервиса получения комментария по его Идентификатору
+        /// </summary>
+        /// <param name="commentId"></param>
+        /// <returns></returns>
+        public async Task<GetCommentResponse> Get(int commentId)
         {
-            throw new NotImplementedException();
+            var comment = await _commentRepository.Get(commentId);
+            var getCommentResponse = _mapper.Map<GetCommentResponse>(comment);
+            return getCommentResponse;
         }
 
-        public Task<IdentityResult> Update(int commentId, UpdateCommentRequest updateCommentRequest)
+        /// <summary>
+        /// Логика сервиса получения всех комментариев
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        public async Task<GetCommentResponse[]> GetAll()
         {
-            throw new NotImplementedException();
+            var comments = await _commentRepository.GetComments();
+            var getCommentResponse = _mapper.Map<Comment[], GetCommentResponse[]>(comments);
+            return getCommentResponse;
+        }
+
+        /// <summary>
+        /// Логика сервиса обновления комментария
+        /// </summary>
+        /// <param name="commentId"></param>
+        /// <param name="updateCommentRequest"></param>
+        /// <returns></returns>
+        public async Task<IdentityResult> Update(int commentId, UpdateCommentRequest updateCommentRequest)
+        {
+            var comment = _mapper.Map<Comment>(updateCommentRequest);
+            await _commentRepository.Update(commentId, comment);
+            return IdentityResult.Success;
         }
     }
 }

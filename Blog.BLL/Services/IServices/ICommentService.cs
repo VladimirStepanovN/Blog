@@ -7,7 +7,7 @@ namespace Blog.BLL.Services.IServices
     public interface ICommentService
     {
         Task<IdentityResult> Create(AddCommentRequest addCommentRequest);
-        Task<GetCommentResponse[]> Get(int commentId);
+        Task<GetCommentResponse> Get(int commentId);
         Task<GetCommentResponse[]> GetAll();
         Task<IdentityResult> Update(int commentId, UpdateCommentRequest updateCommentRequest);
         Task<IdentityResult> Delete(int commentId);

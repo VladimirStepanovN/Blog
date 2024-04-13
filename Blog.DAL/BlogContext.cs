@@ -40,6 +40,8 @@ namespace Blog.DAL
                 .HasMany(a => a.Comments)
                 .WithOne(c => c.Article)
                 .HasForeignKey(c => c.ArticleId);
+
+            //нужно подумать про теги и роли
         }
     }
 }

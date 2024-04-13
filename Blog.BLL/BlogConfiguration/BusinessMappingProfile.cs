@@ -6,6 +6,8 @@ using Blog.BLL.BusinessModels.Requests.ArticleRequests;
 using Blog.BLL.BusinessModels.Responses.ArticleResponses;
 using Blog.BLL.BusinessModels.Requests.CommentRequests;
 using Blog.BLL.BusinessModels.Responses.CommentResponses;
+using Blog.BLL.BusinessModels.Requests.TagRequests;
+using Blog.BLL.BusinessModels.Responses.TagResponses;
 
 namespace Blog.BLL.BlogConfiguration
 {
@@ -25,6 +27,9 @@ namespace Blog.BLL.BlogConfiguration
             CreateMap<AddCommentRequest, Comment>();
             CreateMap<UpdateCommentRequest, Comment>();
             CreateMap<Comment, GetCommentResponse>();
+            CreateMap<Tag, AddTagRequest>();
+            CreateMap<Tag, UpdateTagRequest>();
+            CreateMap<GetTagResponse, Tag>();
         }
     }
 }
