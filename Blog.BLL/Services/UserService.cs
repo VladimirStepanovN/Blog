@@ -13,11 +13,13 @@ namespace Blog.BLL.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IRoleRepository _roleRepository;
         private readonly IMapper _mapper;
 
         public UserService(ConnectionSettings settings)
         {
             _userRepository = new UserRepository(settings.DefaultConnection);
+            _roleRepository = new RoleRepository(settings.DefaultConnection);
             var mapperConfig = new MapperConfiguration((v) =>
             {
                 v.AddProfile(new BusinessMappingProfile());
@@ -52,6 +54,8 @@ namespace Blog.BLL.Services
             }
 
             user = _mapper.Map<User>(addUserRequest);
+            var userRole = await _roleRepository.GetRoleUser();
+            user.RoleId = userRole.RoleId;
             await _userRepository.Add(user);
             return IdentityResult.Success;
         }
@@ -59,6 +63,7 @@ namespace Blog.BLL.Services
         /// <summary>
         /// Логика сервиса обновления пользователя
         /// </summary>
+        /// <param name="userId"></param>
         /// <param name="updateUserRequest"></param>
         /// <returns></returns>
         public async Task<IdentityResult> Update(int userId, UpdateUserRequest updateUserRequest)
@@ -74,6 +79,11 @@ namespace Blog.BLL.Services
         public async Task<GetUserResponse[]> GetAll()
         {
             var users = await _userRepository.GetUsers();
+            for (int i = 0; i < users.Length; i++)
+            {
+                var role = await _roleRepository.GetRoleById(users[i].RoleId);
+                users[i].Role = role;
+            }
             var getUsersResponse = _mapper.Map<User[], GetUserResponse[]>(users);
             return getUsersResponse;
         }
@@ -81,9 +91,50 @@ namespace Blog.BLL.Services
         /// <summary>
         /// Логика сервиса получения пользователя по Идентификатору
         /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public async Task<GetUserResponse> Get(int userId)
         {
             var user = await _userRepository.Get(userId);
+            if(user != null)
+            {
+                var role = await _roleRepository.GetRoleById(user.RoleId);
+                user.Role = role;
+            }
+            var getUserResponse = _mapper.Map<GetUserResponse>(user);
+            return getUserResponse;
+        }
+
+        /// <summary>
+        /// Логика сервиса получения пользователя по Логину
+        /// </summary>
+        /// <param name="login"></param>
+        /// <returns></returns>
+        public async Task<AuthenticateResponse> GetByLogin(string login)
+        {
+            var user = await _userRepository.GetByLogin(login);
+            if (user != null)
+            {
+                var role = await _roleRepository.GetRoleById(user.RoleId);
+                user.Role = role;
+            }
+            var authenticateResponse = _mapper.Map<AuthenticateResponse>(user);
+            return authenticateResponse;
+        }
+
+        /// <summary>
+        /// Логика сервиса получения пользователя по Логину
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public async Task<GetUserResponse> GetByEmail(string email)
+        {
+            var user = await _userRepository.GetByEMail(email);
+            if (user != null)
+            {
+                var role = await _roleRepository.GetRoleById(user.RoleId);
+                user.Role = role;
+            }
             var getUserResponse = _mapper.Map<GetUserResponse>(user);
             return getUserResponse;
         }
@@ -91,7 +142,7 @@ namespace Blog.BLL.Services
         /// <summary>
         /// Логика сервиса удаления пользователя
         /// </summary>
-        /// <param name="deleteUserRequest"></param>
+        /// <param name="userId"></param>
         /// <returns></returns>
         public async Task<IdentityResult> Delete(int userId)
         {

@@ -11,5 +11,7 @@ namespace Blog.BLL.Services.IServices
         Task<GetUserResponse[]> GetAll();
         Task<IdentityResult> Delete(int userId);
         Task<GetUserResponse> Get(int userId);
+        Task<AuthenticateResponse> GetByLogin(string login);
+        Task<GetUserResponse> GetByEmail(string email);
     }
 }

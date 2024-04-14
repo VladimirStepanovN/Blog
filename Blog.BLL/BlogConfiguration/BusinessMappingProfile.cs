@@ -27,9 +27,10 @@ namespace Blog.BLL.BlogConfiguration
             CreateMap<AddCommentRequest, Comment>();
             CreateMap<UpdateCommentRequest, Comment>();
             CreateMap<Comment, GetCommentResponse>();
-            CreateMap<Tag, AddTagRequest>();
-            CreateMap<Tag, UpdateTagRequest>();
-            CreateMap<GetTagResponse, Tag>();
+            CreateMap<AddTagRequest, Tag>();
+            CreateMap<UpdateTagRequest, Tag>();
+            CreateMap<Tag, GetTagResponse>();
+            CreateMap<User, AuthenticateResponse>();
         }
     }
 }

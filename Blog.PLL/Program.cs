@@ -25,6 +25,18 @@ namespace Blog.PLL
             builder.Services.AddSingleton<ITagService, TagService>();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddAuthentication(options => options.DefaultScheme = "Cookies")
+                .AddCookie("Cookies", options =>
+                {
+                    options.Events = new Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents
+                    {
+                        OnRedirectToLogin = redirectContext =>
+                        {
+                            redirectContext.HttpContext.Response.StatusCode = 401;
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
             //----------------------
 
 
@@ -61,6 +73,7 @@ namespace Blog.PLL
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(

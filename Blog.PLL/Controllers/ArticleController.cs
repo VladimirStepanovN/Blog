@@ -1,5 +1,6 @@
 ﻿using Blog.BLL.BusinessModels.Requests.ArticleRequests;
 using Blog.BLL.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Blog.PLL.Controllers
@@ -9,10 +10,12 @@ namespace Blog.PLL.Controllers
     public class ArticleController : Controller
     {
         private readonly IArticleService _articleService;
+        private readonly IUserService _userService;
 
-        public ArticleController(IArticleService articleService)
+        public ArticleController(IArticleService articleService, IUserService userService)
         {
             _articleService = articleService;
+            _userService = userService;
         }
 
         //для формы добавления статьи
@@ -28,6 +31,7 @@ namespace Blog.PLL.Controllers
         /// </summary>
         /// <param name="addArticleRequest"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Пользователь")]
         [HttpPost]
         [Route("AddArticle")]
         public async Task<IActionResult> Create([FromBody] AddArticleRequest addArticleRequest)
@@ -47,6 +51,7 @@ namespace Blog.PLL.Controllers
         /// <param name="articleId"></param>
         /// <param name="updateArticleRequest"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Пользователь, Модератор")]
         [HttpPut]
         [Route("UpdateArticle")]
         public async Task<IActionResult> Update(int articleId, [FromBody] UpdateArticleRequest updateArticleRequest)
@@ -59,6 +64,7 @@ namespace Blog.PLL.Controllers
         /// <summary>
         /// Получение списка всех статей
         /// </summary>
+        [Authorize(Roles = "Модератор, Администратор")]
         [HttpGet]
         [Route("GetArticles")]
         public async Task<IActionResult> GetAll()
@@ -71,6 +77,7 @@ namespace Blog.PLL.Controllers
         /// <summary>
         /// Получение списка всех статей определенного автора по его Идентификатору
         /// </summary>
+        [Authorize(Roles = "Пользователь, Модератор, Администратор")]
         [HttpGet]
         [Route("GetArticlesByAuthor")]
         public async Task<IActionResult> GetAllByAuthor(int userId)
@@ -85,6 +92,7 @@ namespace Blog.PLL.Controllers
         /// </summary>
         /// /// <param name="articleId"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Пользователь, Модератор, Администратор")]
         [HttpDelete]
         [Route("DeleteArticle")]
         public async Task<IActionResult> Delete(int articleId)

@@ -12,6 +12,7 @@ namespace Blog.DAL
         public DbSet<Article> Articles { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<Role> Roles { get; set; }
 
         public BlogContext(string connectionString)
         {
@@ -24,7 +25,7 @@ namespace Blog.DAL
             optionsBuilder.UseSqlite(_connectionString);
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        /*protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
                 .HasMany(u => u.Articles)
@@ -41,7 +42,10 @@ namespace Blog.DAL
                 .WithOne(c => c.Article)
                 .HasForeignKey(c => c.ArticleId);
 
+            modelBuilder.Entity<Role>()
+                .HasMany(r => r.Users);
+
             //нужно подумать про теги и роли
-        }
+        }*/
     }
 }
