@@ -19,6 +19,7 @@ namespace Blog.BLL.Services
         public UserService(ConnectionSettings settings)
         {
             _userRepository = new UserRepository(settings.DefaultConnection);
+            Console.WriteLine($"{settings.DefaultConnection} {File.Exists(settings.DefaultConnection)}");
             _roleRepository = new RoleRepository(settings.DefaultConnection);
             var mapperConfig = new MapperConfiguration((v) =>
             {
@@ -66,11 +67,33 @@ namespace Blog.BLL.Services
         /// <param name="userId"></param>
         /// <param name="updateUserRequest"></param>
         /// <returns></returns>
-        public async Task<IdentityResult> Update(int userId, UpdateUserRequest updateUserRequest)
+        public async Task<IdentityResult> Update(int userId, UpdateUserRequest updateUserRequest, string login)
         {
-            var user = _mapper.Map<User>(updateUserRequest);
-            await _userRepository.Update(userId, user);
-            return IdentityResult.Success;
+            var initiator = await _userRepository.GetByLogin(login);
+            var role = await _roleRepository.GetRoleById(initiator.RoleId);
+            var entity = await _userRepository.Get(userId);
+
+            if (entity != null)
+            {
+                if (role.RoleName == "Администратор")
+                {
+                    var user = _mapper.Map<User>(updateUserRequest);
+                    await _userRepository.Update(userId, user);
+                    return IdentityResult.Success;
+                }
+
+                if (role.RoleName == "Пользователь" && initiator.UserId == userId)
+                {
+                    var user = _mapper.Map<User>(updateUserRequest);
+                    await _userRepository.Update(userId, user);
+                    return IdentityResult.Success;
+                }
+            }
+
+            return IdentityResult.Failed(new IdentityError
+            {
+                Description = $"Пользователь {userId} не существует"
+            });
         }
 
         /// <summary>
@@ -96,7 +119,7 @@ namespace Blog.BLL.Services
         public async Task<GetUserResponse> Get(int userId)
         {
             var user = await _userRepository.Get(userId);
-            if(user != null)
+            if (user != null)
             {
                 var role = await _roleRepository.GetRoleById(user.RoleId);
                 user.Role = role;
@@ -144,19 +167,31 @@ namespace Blog.BLL.Services
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public async Task<IdentityResult> Delete(int userId)
+        public async Task<IdentityResult> Delete(int userId, string login)
         {
+            var initiator = await _userRepository.GetByLogin(login);
+            var role = await _roleRepository.GetRoleById(initiator.RoleId);
             var entity = await _userRepository.Get(userId);
-            if (entity == null)
+
+            if (entity != null)
             {
-                return IdentityResult.Failed(new IdentityError
+                if (role.RoleName == "Администратор")
                 {
-                    Description = $"Пользователь {userId} не существует"
-                });
+                    await _userRepository.Delete(userId);
+                    return IdentityResult.Success;
+                }
+
+                if (role.RoleName == "Пользователь" && initiator.UserId == userId)
+                {
+                    await _userRepository.Delete(userId);
+                    return IdentityResult.Success;
+                }
             }
 
-            await _userRepository.Delete(userId);
-            return IdentityResult.Success;
+            return IdentityResult.Failed(new IdentityError
+            {
+                Description = $"Пользователь {userId} не существует"
+            });
         }
     }
 }

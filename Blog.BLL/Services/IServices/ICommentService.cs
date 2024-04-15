@@ -9,7 +9,7 @@ namespace Blog.BLL.Services.IServices
         Task<IdentityResult> Create(AddCommentRequest addCommentRequest);
         Task<GetCommentResponse> Get(int commentId);
         Task<GetCommentResponse[]> GetAll();
-        Task<IdentityResult> Update(int commentId, UpdateCommentRequest updateCommentRequest);
-        Task<IdentityResult> Delete(int commentId);
+        Task<IdentityResult> Update(int commentId, UpdateCommentRequest updateCommentRequest, string login);
+        Task<IdentityResult> Delete(int commentId, string login);
     }
 }

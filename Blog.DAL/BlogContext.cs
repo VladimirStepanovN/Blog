@@ -24,28 +24,5 @@ namespace Blog.DAL
         {
             optionsBuilder.UseSqlite(_connectionString);
         }
-
-        /*protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.Articles)
-                .WithOne(a => a.Author)
-                .HasForeignKey(a => a.UserId);
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.Comments)
-                .WithOne(c => c.Author)
-                .HasForeignKey(c => c.UserId);
-
-            modelBuilder.Entity<Article>()
-                .HasMany(a => a.Comments)
-                .WithOne(c => c.Article)
-                .HasForeignKey(c => c.ArticleId);
-
-            modelBuilder.Entity<Role>()
-                .HasMany(r => r.Users);
-
-            //нужно подумать про теги и роли
-        }*/
     }
 }

@@ -13,11 +13,15 @@ namespace Blog.BLL.Services
     public class ArticleService : IArticleService
     {
         private readonly IArticleRepository _articleRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IRoleRepository _roleRepository;
         private readonly IMapper _mapper;
 
         public ArticleService(ConnectionSettings settings)
         {
             _articleRepository = new ArticleRepository(settings.DefaultConnection);
+            _userRepository = new UserRepository(settings.DefaultConnection);
+            _roleRepository = new RoleRepository(settings.DefaultConnection);
             var mapperConfig = new MapperConfiguration((v) =>
             {
                 v.AddProfile(new BusinessMappingProfile());
@@ -42,19 +46,31 @@ namespace Blog.BLL.Services
         /// </summary>
         /// <param name="articleId"></param>
         /// <returns></returns>
-        public async Task<IdentityResult> Delete(int articleId)
+        public async Task<IdentityResult> Delete(int articleId, string login)
         {
-            var article = await _articleRepository.Get(articleId);
-            if (article == null)
+            var initiator = await _userRepository.GetByLogin(login);
+            var role = await _roleRepository.GetRoleById(initiator.RoleId);
+            var entity = await _articleRepository.Get(articleId);
+
+            if (entity != null)
             {
-                return IdentityResult.Failed(new IdentityError
+                if (role.RoleName == "Модератор")
                 {
-                    Description = $"Статьи не существует"
-                });
+                    await _articleRepository.Delete(articleId);
+                    return IdentityResult.Success;
+                }
+
+                if (role.RoleName == "Пользователь" && initiator.UserId == entity.UserId)
+                {
+                    await _articleRepository.Delete(articleId);
+                    return IdentityResult.Success;
+                }
             }
 
-            await _articleRepository.Delete(articleId);
-            return IdentityResult.Success;
+            return IdentityResult.Failed(new IdentityError
+            {
+                Description = "Статьи не существует"
+            });
         }
 
         /// <summary>
@@ -87,11 +103,33 @@ namespace Blog.BLL.Services
         /// <param name="articleId"></param>
         /// <param name="updateArticleRequest"></param>
         /// <returns></returns>
-        public async Task<IdentityResult> Update(int articleId, UpdateArticleRequest updateArticleRequest)
+        public async Task<IdentityResult> Update(int articleId, UpdateArticleRequest updateArticleRequest, string login)
         {
-            var article = _mapper.Map<Article>(updateArticleRequest);
-            await _articleRepository.Update(articleId, article);
-            return IdentityResult.Success;
+            var initiator = await _userRepository.GetByLogin(login);
+            var role = await _roleRepository.GetRoleById(initiator.RoleId);
+            var entity = await _articleRepository.Get(articleId);
+
+            if (entity != null)
+            {
+                if (role.RoleName == "Модератор")
+                {
+                    var article = _mapper.Map<Article>(updateArticleRequest);
+                    await _articleRepository.Update(articleId, article);
+                    return IdentityResult.Success;
+                }
+
+                if (role.RoleName == "Пользователь" && initiator.UserId == entity.UserId)
+                {
+                    var article = _mapper.Map<Article>(updateArticleRequest);
+                    await _articleRepository.Update(articleId, article);
+                    return IdentityResult.Success;
+                }
+            }
+
+            return IdentityResult.Failed(new IdentityError
+            {
+                Description = "Статьи не существует"
+            });
         }
     }
 }

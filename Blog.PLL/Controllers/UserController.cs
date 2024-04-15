@@ -9,8 +9,6 @@ using System.Security.Claims;
 
 namespace Blog.PLL.Controllers
 {
-    //[ApiController]
-    //[Route("[controller]")]
     public class UserController : Controller
     {
         private readonly IUserService _userService;
@@ -51,12 +49,16 @@ namespace Blog.PLL.Controllers
         /// </summary>
         /// /// <param name="updateUserRequest"></param>
         /// <returns></returns>
-        [Authorize(Roles = "Пользователь, Модератор, Администратор")]
+        [Authorize(Roles = "Пользователь, Администратор")]
         [HttpPut]
         [Route("UpdateUser")]
         public async Task<IActionResult> Update(int userId, [FromBody] UpdateUserRequest updateUserRequest)
         {
-            var result = await _userService.Update(userId, updateUserRequest);
+            var result = await _userService.Update(userId, updateUserRequest, User.Identity.Name);
+            if (result.Errors.FirstOrDefault() != null)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+            }
             return StatusCode(StatusCodes.Status200OK, updateUserRequest);
             //return View();
         }
@@ -97,7 +99,7 @@ namespace Blog.PLL.Controllers
         [Route("DeleteUser")]
         public async Task<IActionResult> Delete(int userId)
         {
-            var result = await _userService.Delete(userId);
+            var result = await _userService.Delete(userId, User.Identity.Name);
             if (result.Errors.FirstOrDefault() != null)
             {
                 return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
@@ -110,6 +112,7 @@ namespace Blog.PLL.Controllers
         [Route("Authenticate")]
         public async Task<IActionResult> Authenticate(string login, string password)
         {
+
             if (string.IsNullOrEmpty(login) ||
               string.IsNullOrEmpty(password))
                 throw new ArgumentNullException("Запрос не корректен");

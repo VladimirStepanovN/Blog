@@ -1,11 +1,10 @@
 ﻿using Blog.BLL.BusinessModels.Requests.CommentRequests;
 using Blog.BLL.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Blog.PLL.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
     public class CommentController : Controller
     {
         private readonly ICommentService _commentService;
@@ -16,6 +15,7 @@ namespace Blog.PLL.Controllers
         }
 
         //для формы добавления комментария
+        [Authorize(Roles = "Пользователь, Модератор")]
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -28,6 +28,7 @@ namespace Blog.PLL.Controllers
         /// </summary>
         /// <param name="addCommentRequest"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Пользователь, Модератор")]
         [HttpPost]
         [Route("AddComment")]
         public async Task<IActionResult> Create([FromBody] AddCommentRequest addCommentRequest)
@@ -47,11 +48,16 @@ namespace Blog.PLL.Controllers
         /// <param name="commentId"></param>
         /// <param name="updateCommentRequest"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Пользователь, Модератор")]
         [HttpPut]
         [Route("UpdateComment")]
         public async Task<IActionResult> Update(int commentId, [FromBody] UpdateCommentRequest updateCommentRequest)
         {
-            var result = await _commentService.Update(commentId, updateCommentRequest);
+            var result = await _commentService.Update(commentId, updateCommentRequest, User.Identity.Name);
+            if (result.Errors.FirstOrDefault() != null)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+            }
             return StatusCode(StatusCodes.Status200OK, updateCommentRequest);
             //return View();
         }
@@ -59,6 +65,7 @@ namespace Blog.PLL.Controllers
         /// <summary>
         /// Получение списка всех комментариев
         /// </summary>
+        [Authorize(Roles = "Пользователь, Модератор")]
         [HttpGet]
         [Route("GetComments")]
         public async Task<IActionResult> GetAll()
@@ -73,6 +80,7 @@ namespace Blog.PLL.Controllers
         /// </summary>
         /// <param name="commentId"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Пользователь, Модератор")]
         [HttpGet]
         [Route("GetComment")]
         public async Task<IActionResult> Get(int commentId)
@@ -87,11 +95,12 @@ namespace Blog.PLL.Controllers
         /// </summary>
         /// /// <param name="commentId"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Пользователь, Модератор")]
         [HttpDelete]
         [Route("DeleteComment")]
         public async Task<IActionResult> Delete(int commentId)
         {
-            var result = await _commentService.Delete(commentId);
+            var result = await _commentService.Delete(commentId, User.Identity.Name);
             if (result.Errors.FirstOrDefault() != null)
             {
                 return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);

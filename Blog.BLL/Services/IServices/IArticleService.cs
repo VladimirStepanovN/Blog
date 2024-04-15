@@ -7,9 +7,9 @@ namespace Blog.BLL.Services.IServices
     public interface IArticleService
     {
         Task<IdentityResult> Create(AddArticleRequest addArticleRequest);
-        Task<IdentityResult> Update(int articleId, UpdateArticleRequest updateArticleRequest);
+        Task<IdentityResult> Update(int articleId, UpdateArticleRequest updateArticleRequest, string login);
         Task<GetArticleResponse[]> GetAll();
-        Task<IdentityResult> Delete(int articleId);
+        Task<IdentityResult> Delete(int articleId, string login);
         Task<GetArticleResponse[]> GetAllByUserId(int userId);
     }
 }

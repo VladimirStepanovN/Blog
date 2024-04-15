@@ -1,13 +1,10 @@
-﻿using Blog.BLL.BusinessModels.Requests.CommentRequests;
-using Blog.BLL.BusinessModels.Requests.TagRequests;
-using Blog.BLL.Services;
+﻿using Blog.BLL.BusinessModels.Requests.TagRequests;
 using Blog.BLL.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Blog.PLL.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
     public class TagController : Controller
     {
         private readonly ITagService _tagService;
@@ -18,6 +15,7 @@ namespace Blog.PLL.Controllers
         }
 
         //для формы добавления тега
+        [Authorize(Roles = "Модератор")]
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -30,6 +28,7 @@ namespace Blog.PLL.Controllers
         /// </summary>
         /// <param name="addTagRequest"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Модератор")]
         [HttpPost]
         [Route("AddTag")]
         public async Task<IActionResult> Create([FromBody] AddTagRequest addTagRequest)
@@ -49,11 +48,16 @@ namespace Blog.PLL.Controllers
         /// <param name="tagId"></param>
         /// <param name="updateTagRequest"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Модератор")]
         [HttpPut]
         [Route("UpdateTag")]
         public async Task<IActionResult> Update(int tagId, [FromBody] UpdateTagRequest updateTagRequest)
         {
             var result = await _tagService.Update(tagId, updateTagRequest);
+            if (result.Errors.FirstOrDefault() != null)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+            }
             return StatusCode(StatusCodes.Status200OK, updateTagRequest);
             //return View();
         }
@@ -61,6 +65,7 @@ namespace Blog.PLL.Controllers
         /// <summary>
         /// Получение списка всех тегов
         /// </summary>
+        [Authorize(Roles = "Пользователь, Модератор")]
         [HttpGet]
         [Route("GetTags")]
         public async Task<IActionResult> GetAll()
@@ -75,6 +80,7 @@ namespace Blog.PLL.Controllers
         /// </summary>
         /// <param name="tagId"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Пользователь, Модератор")]
         [HttpGet]
         [Route("GetTag")]
         public async Task<IActionResult> Get(int tagId)
@@ -89,6 +95,7 @@ namespace Blog.PLL.Controllers
         /// </summary>
         /// /// <param name="tagId"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Модератор")]
         [HttpDelete]
         [Route("DeleteTag")]
         public async Task<IActionResult> Delete(int tagId)

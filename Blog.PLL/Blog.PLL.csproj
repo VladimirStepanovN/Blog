@@ -15,4 +15,10 @@
     <ProjectReference Include="..\Blog.BLL\Blog.BLL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Blog.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Blog.PLL.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
     public class ArticleController : Controller
     {
         private readonly IArticleService _articleService;
@@ -19,6 +17,7 @@ namespace Blog.PLL.Controllers
         }
 
         //для формы добавления статьи
+        [Authorize(Roles = "Пользователь")]
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -56,7 +55,11 @@ namespace Blog.PLL.Controllers
         [Route("UpdateArticle")]
         public async Task<IActionResult> Update(int articleId, [FromBody] UpdateArticleRequest updateArticleRequest)
         {
-            var result = await _articleService.Update(articleId, updateArticleRequest);
+            var result = await _articleService.Update(articleId, updateArticleRequest, User.Identity.Name);
+            if (result.Errors.FirstOrDefault() != null)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+            }
             return StatusCode(StatusCodes.Status200OK, updateArticleRequest);
             //return View();
         }
@@ -64,7 +67,7 @@ namespace Blog.PLL.Controllers
         /// <summary>
         /// Получение списка всех статей
         /// </summary>
-        [Authorize(Roles = "Модератор, Администратор")]
+        [Authorize(Roles = "Пользователь, Модератор")]
         [HttpGet]
         [Route("GetArticles")]
         public async Task<IActionResult> GetAll()
@@ -77,7 +80,7 @@ namespace Blog.PLL.Controllers
         /// <summary>
         /// Получение списка всех статей определенного автора по его Идентификатору
         /// </summary>
-        [Authorize(Roles = "Пользователь, Модератор, Администратор")]
+        [Authorize(Roles = "Пользователь, Модератор")]
         [HttpGet]
         [Route("GetArticlesByAuthor")]
         public async Task<IActionResult> GetAllByAuthor(int userId)
@@ -92,12 +95,12 @@ namespace Blog.PLL.Controllers
         /// </summary>
         /// /// <param name="articleId"></param>
         /// <returns></returns>
-        [Authorize(Roles = "Пользователь, Модератор, Администратор")]
+        [Authorize(Roles = "Пользователь, Модератор")]
         [HttpDelete]
         [Route("DeleteArticle")]
         public async Task<IActionResult> Delete(int articleId)
         {
-            var result = await _articleService.Delete(articleId);
+            var result = await _articleService.Delete(articleId, User.Identity.Name);
             if (result.Errors.FirstOrDefault() != null)
             {
                 return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
