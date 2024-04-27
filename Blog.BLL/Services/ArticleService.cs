@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Blog.BLL.BlogConfiguration;
 using Blog.BLL.BusinessModels.Requests.ArticleRequests;
+using Blog.BLL.BusinessModels.Requests.TagRequests;
 using Blog.BLL.BusinessModels.Responses.ArticleResponses;
+using Blog.BLL.BusinessModels.Responses.TagResponses;
 using Blog.BLL.Services.IServices;
 using Blog.DAL.Entities;
 using Blog.DAL.Repositories;
@@ -97,31 +99,44 @@ namespace Blog.BLL.Services
             return getArticleResponse;
         }
 
-        /// <summary>
-        /// Логика сервиса редактирования статьи
-        /// </summary>
-        /// <param name="articleId"></param>
-        /// <param name="updateArticleRequest"></param>
-        /// <returns></returns>
-        public async Task<IdentityResult> Update(int articleId, UpdateArticleRequest updateArticleRequest, string login)
+		/// <summary>
+		/// Логика сервиса получения статьи по Идентификатору
+		/// </summary>
+		/// <param name="userId"></param>
+		/// <returns></returns>
+		public async Task<GetArticleResponse> GetById(int articleId)
+		{
+			var article = await _articleRepository.Get(articleId);
+			var getArticleResponse = _mapper.Map<GetArticleResponse>(article);
+			return getArticleResponse;
+		}
+
+		/// <summary>
+		/// Логика сервиса редактирования статьи
+		/// </summary>
+		/// <param name="articleId"></param>
+		/// <param name="updateArticleRequest"></param>
+		/// <returns></returns>
+		public async Task<IdentityResult> Update(UpdateArticleRequest updateArticleRequest, string login)
         {
             var initiator = await _userRepository.GetByLogin(login);
             var role = await _roleRepository.GetRoleById(initiator.RoleId);
-            var entity = await _articleRepository.Get(articleId);
+            var entity = await _articleRepository.Get(updateArticleRequest.ArticleId);
 
             if (entity != null)
             {
                 if (role.RoleName == "Модератор")
                 {
                     var article = _mapper.Map<Article>(updateArticleRequest);
-                    await _articleRepository.Update(articleId, article);
+                    article.Tags = _mapper.Map <TagRequest[],Tag[]>(updateArticleRequest.Tags);
+                    await _articleRepository.Update(updateArticleRequest.ArticleId, article);
                     return IdentityResult.Success;
                 }
 
                 if (role.RoleName == "Пользователь" && initiator.UserId == entity.UserId)
                 {
                     var article = _mapper.Map<Article>(updateArticleRequest);
-                    await _articleRepository.Update(articleId, article);
+                    await _articleRepository.Update(updateArticleRequest.ArticleId, article);
                     return IdentityResult.Success;
                 }
             }

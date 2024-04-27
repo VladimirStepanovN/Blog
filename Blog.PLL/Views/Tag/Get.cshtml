@@ -1,0 +1,36 @@
+﻿@using Blog.BLL.BusinessModels.Responses.TagResponses;
+@model GetTagFullResponse
+
+@{
+	@if (Model.Articles == null)
+	{
+		<h5 class="card-title">Нет данных для отображения</h5>
+	}
+	else
+	{
+		<h5 class="card-title">Все статьи по тегу <span class="badge rounded-pill bg-primary text-white" style="color:white">@Model.Name</span><br /></h5>
+		foreach (var article in Model.Articles)
+		{
+			<div class="card w-75">
+				<div class="card-body">
+					<h5 style="color:blue" class="card-title">@article.Title</h5>
+					@if (User.IsInRole("Модератор"))
+					{
+						<div>
+							<a class="btn btn-outline-secondary" method="get" asp-controller="Article" asp-action="Get" asp-route-articleId="@article.ArticleId">Просмотреть</a>
+							<a class="btn btn-outline-info button" method="get" asp-controller="Article" asp-action="Update" asp-route-articleId="@article.ArticleId">Редактировать</a>
+							<a class="btn btn-outline-danger button" method="get" asp-controller="Article" asp-action="Delete" asp-route-articleId="@article.ArticleId">Удалить</a>
+						</div>
+					}
+					else
+					{
+						<div>
+							<a class="btn btn-outline-secondary" method="get" asp-controller="Article" asp-action="Get" asp-route-articleId="@article.ArticleId">Просмотреть</a>
+						</div>
+					}
+				</div>
+			</div>
+			<p></p>
+		}
+	}
+}

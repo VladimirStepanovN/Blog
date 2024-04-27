@@ -1,0 +1,47 @@
+﻿@using Blog.BLL.BusinessModels.Requests.ArticleRequests;﻿
+@model AddArticleRequest
+
+<div class="container-page">
+    <h2 class="title-margin">Добавление статьи</h2>
+    <form method="post" asp-controller="Article" asp-action="Create">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div style="margin-bottom: 5px">
+            <label asp-for="Title"></label><br />
+            <input class="form-control" asp-for="Title" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+        <div style="margin-bottom: 5px">
+            <table>
+                @if (Model is not null)
+                {
+                    @for (int i = 0; i < Model.Tags.Count(); i++)
+                    {
+                        if (i % 3 == 0)
+                        {
+                            @:
+                            <tr></tr>
+                        }
+                        <td>
+                            @Html.CheckBoxFor(model => model.Tags[i].IsSelected)
+                            <lable class="tag-margin">@Model.Tags[i].Name</lable>
+                            @Html.HiddenFor(model => model.Tags[i].IsSelected)
+                            @Html.HiddenFor(model => model.Tags[i].TagId)
+                            @Html.HiddenFor(model => model.Tags[i].Name)
+                        </td>
+                    }
+                }
+            </table>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label asp-for="Content"></label><br />
+            <textarea class="form-control" id="editor" rows="10" value="" asp-for="Content"></textarea>
+            <span asp-validation-for="Content" class="text-danger"></span>
+        </div>
+        <div>
+            <input class="btn btn-sm btn-primary" type="submit" value="Добавить" onclick="" />
+        </div>
+        <p>
+            <a method="get" asp-controller="Article" asp-action="GetAll">Вернуться к списку всех статей </a>
+        </p>
+    </form>
+</div>

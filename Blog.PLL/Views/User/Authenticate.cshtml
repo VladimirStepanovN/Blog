@@ -1,0 +1,25 @@
+﻿﻿@using Blog.BLL.BusinessModels.Requests.UsersRequests;
+@model LoginUserRequest
+
+<div class="container-page">
+    <h2 class="title-margin">Вход в приложение</h2>
+    <form method="post" asp-controller="User" asp-action="Authenticate"> <div asp-validation-summary="All" class="text-danger"></div>
+        <div style="margin-bottom: 5px">
+            <label asp-for="Login"></label><br />
+            <input class="form-control" asp-for="Login" />
+            <span asp-validation-for="Login" class="text-danger"></span>
+        </div>
+        <div style="margin-bottom: 5px">
+            <label asp-for="Password"></label><br />
+            <input class="form-control" asp-for="Password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <div style="margin-bottom: 5px">
+            <input class="btn btn-sm btn-primary" type="submit" value="Войти" />
+        </div>
+        <p>
+            Еще нет аккаунта? 
+            <a method="get" asp-controller="Account" asp-action="Register">Регистрация</a>
+        </p>
+    </form>
+</div>

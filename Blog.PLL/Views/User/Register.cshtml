@@ -1,0 +1,43 @@
+﻿@using Blog.BLL.BusinessModels.Requests.UsersRequests;
+@model AddUserRequest
+
+<div class="container-page">
+    <h2 class="title-margin">Регистрация пользователя</h2>
+    <form method="post" asp-controller="User" asp-action="Register">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div>
+            <label asp-for="FirstName">Имя</label><br />
+            <input class="form-control" asp-for="FirstName" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="LastName">Фамилия</label><br />
+            <input class="form-control" asp-for="LastName" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Login">Логин</label><br />
+            <input class="form-control" asp-for="Login" />
+            <span asp-validation-for="Login" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Email">Почта</label><br />
+            <input class="form-control" asp-for="Email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Password">Пароль</label><br />
+            <input class="form-control" asp-for="Password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="PasswordApproved">Пароль</label><br />
+            <input class="form-control" asp-for="PasswordApproved" />
+            <span asp-validation-for="PasswordApproved" class="text-danger"></span>
+        </div>
+        <div>
+            <p></p>
+            <input class="btn btn-sm btn-primary" type="submit" value="Зарегистрироваться" />
+        </div>
+    </form>
+</div>

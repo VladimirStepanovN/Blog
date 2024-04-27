@@ -1,0 +1,33 @@
+﻿@using Blog.BLL.BusinessModels.Requests.UsersRequests;
+@model DeleteUserRequest
+
+<div class="container-page">
+    <h2 class="title-margin">Удаление пользователя</h2>
+    <form method="post" asp-controller="User" asp-action="Delete">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div style="margin-bottom: 5px">
+            <label asp-for="FirstName"></label><br />
+            <input class="form-control" asp-for="FirstName" value="@Model.FirstName" readonly />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+            <input class="form-control" asp-for="UserId" value="@Model.UserId" hidden readonly />
+        </div>
+        <div style="margin-bottom: 5px">
+            <label asp-for="LastName"></label><br />
+            <input class="form-control" asp-for="LastName" value="@Model.LastName" readonly />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+            <input class="form-control" asp-for="UserId" value="@Model.UserId" hidden readonly />
+        </div>
+        <div style="margin-bottom: 5px">
+            <label asp-for="Email"></label><br />
+            <input class="form-control" asp-for="Email" value="@Model.Email" readonly />
+            <span asp-validation-for="Email" class="text-danger"></span>
+            <input class="form-control" asp-for="UserId" value="@Model.UserId" hidden readonly />
+        </div>
+        <div>
+            <input class="btn btn-sm btn-primary" type="submit" value="Удалить" />
+        </div>
+        <p>
+            <a method="get" asp-controller="User" asp-action="GetAll">Вернуться к списку всех пользователей </a>
+        </p>
+    </form>
+</div>

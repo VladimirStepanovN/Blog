@@ -16,7 +16,7 @@ namespace Blog.BLL.Services
         private readonly IRoleRepository _roleRepository;
         private readonly IMapper _mapper;
 
-        public UserService(ConnectionSettings settings)
+		public UserService(ConnectionSettings settings)
         {
             _userRepository = new UserRepository(settings.DefaultConnection);
             Console.WriteLine($"{settings.DefaultConnection} {File.Exists(settings.DefaultConnection)}");
@@ -27,7 +27,6 @@ namespace Blog.BLL.Services
             });
             _mapper = mapperConfig.CreateMapper();
         }
-
 
         /// <summary>
         /// Логика сервиса регистрации нового пользователя
@@ -67,32 +66,32 @@ namespace Blog.BLL.Services
         /// <param name="userId"></param>
         /// <param name="updateUserRequest"></param>
         /// <returns></returns>
-        public async Task<IdentityResult> Update(int userId, UpdateUserRequest updateUserRequest, string login)
+        public async Task<IdentityResult> Update(UpdateUserRequest updateUserRequest, string login)
         {
             var initiator = await _userRepository.GetByLogin(login);
             var role = await _roleRepository.GetRoleById(initiator.RoleId);
-            var entity = await _userRepository.Get(userId);
-
+            var entity = await _userRepository.Get(updateUserRequest.UserId);
+            
             if (entity != null)
             {
                 if (role.RoleName == "Администратор")
                 {
-                    var user = _mapper.Map<User>(updateUserRequest);
-                    await _userRepository.Update(userId, user);
+					var user = _mapper.Map<User>(updateUserRequest);
+                    await _userRepository.Update(updateUserRequest.UserId, user);
                     return IdentityResult.Success;
                 }
 
-                if (role.RoleName == "Пользователь" && initiator.UserId == userId)
+                if (role.RoleName == "Пользователь" && initiator.UserId == updateUserRequest.UserId)
                 {
-                    var user = _mapper.Map<User>(updateUserRequest);
-                    await _userRepository.Update(userId, user);
+					var user = _mapper.Map<User>(updateUserRequest);
+                    await _userRepository.Update(updateUserRequest.UserId, user);
                     return IdentityResult.Success;
                 }
             }
 
-            return IdentityResult.Failed(new IdentityError
+			return IdentityResult.Failed(new IdentityError
             {
-                Description = $"Пользователь {userId} не существует"
+                Description = $"Пользователь {updateUserRequest.UserId} не существует"
             });
         }
 

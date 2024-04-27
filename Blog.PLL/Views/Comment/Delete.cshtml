@@ -1,0 +1,22 @@
+﻿﻿@using Blog.BLL.BusinessModels.Requests.CommentRequests;
+@model DeleteCommentRequest
+
+<div class="container-page">
+    <h2 class="title-margin">Удаление комментария</h2>
+    <form method="post" asp-controller="Comment" asp-action="Delete">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div style="margin-bottom: 5px">
+            <label asp-for="Content"></label><br />
+            <input class="form-control" asp-for="Content" value="@Model.Content" readonly/>
+            <span asp-validation-for="Content" class="text-danger"></span>
+            <input class="form-control" asp-for="CommentId" value="@Model.CommentId" hidden readonly/>
+            <input class="form-control" asp-for="ArticleId" value="@Model.ArticleId" hidden readonly/>
+            <input class="form-control" asp-for="UserId" value="@Model.UserId" hidden readonly/>
+        </div>
+        <div>
+            <input class="btn btn-sm btn-primary" type="submit" value="Удалить" />
+        </div>
+        <p>
+        </p>
+    </form>
+</div>

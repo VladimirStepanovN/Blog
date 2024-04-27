@@ -1,0 +1,34 @@
+﻿﻿@using Blog.BLL.BusinessModels.Responses.CommentResponses;
+@model GetCommentResponse[]
+
+@{
+	@if (Model.Count() == 0)
+	{
+		<h5 style="color: gray;">Коментарии отсутствуют</h5>
+	}
+	else
+	{
+		<h5 style="color: gray;">Все комментарии</h5>
+		foreach (var comment in Model)
+		{
+			<p></p>
+			<div class="card w-75">
+				<div class="card-body">
+					<p>@comment.Content</p>
+				</div>
+				<div class="card-footer">
+					<h7 span class="badge rounded-pill bg-primary text-white float-end" style="color:white">@comment.Author.Email</h7>
+					@if (User.IsInRole("Модератор"))
+					{
+						<p>@comment.Author.FirstName @comment.Author.LastName</p>
+						<p>Логин автора: @comment.Author.Login</p>
+						<div>
+							<a class="btn btn-outline-info button" method="get" asp-controller="Comment" asp-action="Update" asp-route-commentId="@comment.CommentId">Редактировать</a>
+							<a class="btn btn-outline-danger button" method="get" asp-controller="Comment" asp-action="Delete" asp-route-commentId="@comment.CommentId">Удалить</a>
+						</div>
+					}
+				</div>
+			</div>
+		}
+	}
+}

@@ -1,4 +1,5 @@
-﻿using Blog.BLL.BusinessModels.Requests.UsersRequests;
+﻿using AutoMapper;
+using Blog.BLL.BusinessModels.Requests.UsersRequests;
 using Blog.BLL.Services.IServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -12,19 +13,25 @@ namespace Blog.PLL.Controllers
     public class UserController : Controller
     {
         private readonly IUserService _userService;
+        private readonly IMapper _mapper;
 
-        public UserController(IUserService userService)
+		public UserController(IUserService userService, IMapper mapper)
         {
             _userService = userService;
+            _mapper = mapper;
         }
 
-        //для формы регистрации пользователя
+        /// <summary>
+        /// Регистрация нового пользователя
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
         [HttpGet]
+        [Route("User/Register")]
         public async Task<IActionResult> Register()
         {
             return View();
         }
-
 
         /// <summary>
         /// Регистрация нового пользователя
@@ -32,43 +39,57 @@ namespace Blog.PLL.Controllers
         /// <param name="addUserRequest"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("RegisterUser")]
-        public async Task<IActionResult> Register([FromBody] AddUserRequest addUserRequest)
+        [Route("User/Register")]
+        public async Task<IActionResult> Register(AddUserRequest addUserRequest)
         {
             var result = await _userService.Register(addUserRequest);
             if (result.Errors.FirstOrDefault() != null)
             {
                 return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
             }
-            return StatusCode(StatusCodes.Status200OK, addUserRequest);
-            //return View();
+            return View("Authenticate");
         }
 
         /// <summary>
-        /// Удаление пользователя
+        /// Редактирование пользователя
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [Authorize(Roles = "Пользователь, Администратор")]
+        [HttpGet]
+        [Route("User/Update")]
+        public async Task<IActionResult> Update(int userId)
+        {
+            var user = await _userService.Get(userId);
+            var view = _mapper.Map<UpdateUserRequest>(user);
+            return View(view);
+        }
+
+        /// <summary>
+        /// Редактирование пользователя
         /// </summary>
         /// /// <param name="updateUserRequest"></param>
         /// <returns></returns>
         [Authorize(Roles = "Пользователь, Администратор")]
-        [HttpPut]
-        [Route("UpdateUser")]
-        public async Task<IActionResult> Update(int userId, [FromBody] UpdateUserRequest updateUserRequest)
+        [HttpPost]
+        [Route("User/Update")]
+        public async Task<IActionResult> Update(UpdateUserRequest updateUserRequest)
         {
-            var result = await _userService.Update(userId, updateUserRequest, User.Identity.Name);
+			var result = await _userService.Update(updateUserRequest, User.Identity.Name);
             if (result.Errors.FirstOrDefault() != null)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+				return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
             }
-            return StatusCode(StatusCodes.Status200OK, updateUserRequest);
-            //return View();
-        }
+            return StatusCode(StatusCodes.Status200OK, "Обновлен");
+			//return View();
+		}
 
         /// <summary>
         /// Получение пользователя по Идентификатору
         /// </summary>
         [Authorize(Roles = "Пользователь, Модератор, Администратор")]
         [HttpGet]
-        [Route("GetUserById")]
+        [Route("User/GetById")]
         public async Task<IActionResult> Get(int userId)
         {
             var user = await _userService.Get(userId);
@@ -79,37 +100,64 @@ namespace Blog.PLL.Controllers
         /// <summary>
         /// Получение списка всех пользователей
         /// </summary>
-        [Authorize(Roles = "Администратор")]
+        [Authorize(Roles = "Пользователь, Модератор, Администратор")]
         [HttpGet]
-        [Route("GetUsers")]
+        [Route("User/GetAll")]
         public async Task<IActionResult> GetAll()
         {
             var users = await _userService.GetAll();
-            return StatusCode(StatusCodes.Status200OK, users);
-            //return View();
+            return View(users);
         }
 
-        /// <summary>
-        /// Удаление пользователя
-        /// </summary>
-        /// /// <param name="userId"></param>
-        /// <returns></returns>
-        [Authorize(Roles = "Пользователь, Администратор")]
-        [HttpDelete]
-        [Route("DeleteUser")]
-        public async Task<IActionResult> Delete(int userId)
+		/// <summary>
+		/// Удаление пользователя
+		/// </summary>
+		/// /// <param name="userId"></param>
+		/// <returns></returns>
+		[Authorize(Roles = "Пользователь, Администратор")]
+		[HttpGet]
+		[Route("User/Delete")]
+		public async Task<IActionResult> Delete(int userId)
+		{
+			var user = await _userService.Get(userId);
+			var view = _mapper.Map<DeleteUserRequest>(user);
+			return View(view);
+		}
+
+		/// <summary>
+		/// Удаление пользователя
+		/// </summary>
+		/// /// <param name="userId"></param>
+		/// <returns></returns>
+		[Authorize(Roles = "Пользователь, Администратор")]
+        [HttpPost]
+        [Route("User/Delete")]
+        public async Task<IActionResult> Delete(DeleteUserRequest deleteUserRequest)
         {
-            var result = await _userService.Delete(userId, User.Identity.Name);
+			var result = await _userService.Delete(deleteUserRequest.UserId, User.Identity.Name);
             if (result.Errors.FirstOrDefault() != null)
             {
                 return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
             }
-            return StatusCode(StatusCodes.Status200OK, $"Пользователь {userId} удалён");
-            //return View();
+            if (User.IsInRole("Администратор"))
+            {
+				return RedirectToAction("GetAll", "User");
+            }
+            else
+            {
+				return RedirectToAction("Authenticate", "User");
+			}
+        }
+
+        [HttpGet]
+        [Route("User/Authenticate")]
+        public async Task<IActionResult> Authenticate()
+        {
+            return View();
         }
 
         [HttpPost]
-        [Route("Authenticate")]
+        [Route("User/Authenticate")]
         public async Task<IActionResult> Authenticate(string login, string password)
         {
 
@@ -139,14 +187,9 @@ namespace Blog.PLL.Controllers
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
-            var user = await _userService.Get(authenticateResponse.UsertId);
-            return StatusCode(StatusCodes.Status200OK, user);
-            //return View();
-        }
+            var user = await _userService.Get(authenticateResponse.UserId);
 
-        /*public IActionResult Index()
-        {
-            return View();
-        }*/
-    }
+            return RedirectToAction("GetAll", "Article");
+        }
+	}
 }

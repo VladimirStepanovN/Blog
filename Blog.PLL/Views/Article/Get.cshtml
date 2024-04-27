@@ -1,0 +1,72 @@
+﻿﻿@using Blog.BLL.BusinessModels.Responses.ArticleResponses;
+@model GetArticleResponse
+
+<div class="card w-75">
+	<div class="card-header">
+		<h1 class="card-title">@Model.Title</h1>
+		@{
+			<div style="margin-bottom: 5px">
+				<table>
+					@if (Model.Tags is not null)
+					{
+						@for (int i = 0; i < Model.Tags.Count(); i++)
+						{
+							if (i % 3 == 0)
+							{
+								@:
+								<tr></tr>
+							}
+							<td>
+								<span class="badge rounded-pill bg-primary text-white" style="color:white">@Model.Tags[i].Name</span><br />
+							</td>
+						}
+					}
+				</table>
+			</div>
+		}
+	</div>
+	<div class="card-body">
+		<p>@Model.Content</p>
+	</div>
+	<div class="card-footer">
+		<h7 class="float-end">Автор: @Model.Author.Email</h7>
+	</div>
+</div>
+@{
+	<p></p>
+	<p></p>
+	if (Model.Comments.Count() == 0)
+	{
+		<h5 style="color: gray;">Коментарии отсутствуют</h5>
+	}
+	else
+	{
+		<h5 style="color: gray;">Коментарии к статье</h5>
+		foreach (var comment in Model.Comments)
+		{
+			<p></p>
+			<div class="card w-75">
+				<div class="card-body">
+					<p>@comment.Content</p>
+				</div>
+				<div class="card-footer">
+					<h7 span class="badge rounded-pill bg-primary text-white float-end" style="color:white">@comment.Author.Email</h7>
+					@if (User.IsInRole("Модератор"))
+					{
+						<p>@comment.Author.FirstName @comment.Author.LastName</p>
+						<p>Логин автора: @comment.Author.Login</p>
+					}
+					@if (User.IsInRole("Модератор") || User.Identity.Name == comment.Author.Login)
+					{
+						<div>
+							<a class="btn btn-outline-info button" method="get" asp-controller="Comment" asp-action="Update" asp-route-commentId="@comment.CommentId">Редактировать</a>
+							<a class="btn btn-outline-danger button" method="get" asp-controller="Comment" asp-action="Delete" asp-route-commentId="@comment.CommentId">Удалить</a>
+						</div>
+					}
+				</div>
+			</div>
+		}
+	}
+	<p></p>
+	<a class="btn btn-primary" method="get" asp-controller="Comment" asp-action="Create" asp-route-articleId="@Model.ArticleId">Оставить комментарий</a>
+}

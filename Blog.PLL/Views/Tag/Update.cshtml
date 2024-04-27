@@ -1,0 +1,20 @@
+﻿@using Blog.BLL.BusinessModels.Requests.TagRequests;
+@model UpdateTagRequest
+
+<div class="container-page">
+    <h2 class="title-margin">Редактирование тега</h2>
+    <form method="post" asp-controller="Tag" asp-action="Update"> <div asp-validation-summary="All" class="text-danger"></div>
+        <div style="margin-bottom: 5px">
+            <label asp-for="Name">Название</label><br />
+            <input class="form-control" asp-for="Name" value="@Model.Name"/>
+            <span asp-validation-for="Name" class="text-danger"></span>
+            <input class="form-control" asp-for="@Model.TagId" hidden/>
+        </div>
+        <div>
+            <input class="btn btn-sm btn-primary" type="submit" value="Сохранить"/>
+        </div>
+        <p>
+            <a method="get" asp-controller="Tag" asp-action="GetAll">Перейти к списку всех тегов </a>
+        </p>
+    </form>
+</div>

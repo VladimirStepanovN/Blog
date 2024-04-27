@@ -1,0 +1,48 @@
+﻿@using Blog.BLL.BusinessModels.Requests.ArticleRequests;﻿
+@model DeleteArticleRequest
+
+<div class="container-page">
+	<h2 class="title-margin">Удаление статьи</h2>
+	<form method="post" asp-controller="Article" asp-action="Delete">
+		<div asp-validation-summary="All" class="text-danger"></div>
+		<div style="margin-bottom: 5px">
+			<label asp-for="Title"></label><br />
+			<input class="form-control" asp-for="Title" value="@Model.Title" readonly/>
+			<span asp-validation-for="Title" class="text-danger"></span>
+		</div>
+		<div style="margin-bottom: 5px">
+			<table>
+				@{
+					<table>
+						@if (Model.Tags is not null)
+						{
+							@for (int i = 0; i < Model.Tags.Count(); i++)
+							{
+								if (i % 3 == 0)
+								{
+									@:
+									<tr></tr>
+								}
+								<td>
+									<span class="badge rounded-pill bg-primary text-white" style="color:white">@Model.Tags[i].Name</span><br />
+								</td>
+							}
+						}
+					</table>
+				}
+			</table>
+		</div>
+		<div style="margin-bottom: 5px">
+			<label asp-for="Content"></label><br />
+			<textarea class="form-control" id="editor" rows="10" value="" asp-for="Content" value="@Model.Content" readonly></textarea>
+			<span asp-validation-for="Content" class="text-danger"></span>
+			<input class="form-control" asp-for="ArticleId" value="@Model.ArticleId" readonly hidden />
+		</div>
+		<div>
+			<input class="btn btn-sm btn-primary" type="submit" value="Удалить" onclick="" />
+		</div>
+		<p>
+			<a method="get" asp-controller="Article" asp-action="GetAll">Выйти без сохранения</a>
+		</p>
+	</form>
+</div>

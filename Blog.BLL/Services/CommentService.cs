@@ -116,25 +116,25 @@ namespace Blog.BLL.Services
         /// <param name="commentId"></param>
         /// <param name="updateCommentRequest"></param>
         /// <returns></returns>
-        public async Task<IdentityResult> Update(int commentId, UpdateCommentRequest updateCommentRequest, string login)
+        public async Task<IdentityResult> Update(UpdateCommentRequest updateCommentRequest, string login)
         {
             var initiator = await _userRepository.GetByLogin(login);
             var role = await _roleRepository.GetRoleById(initiator.RoleId);
-            var entity = await _commentRepository.Get(commentId);
+            var entity = await _commentRepository.Get(updateCommentRequest.CommentId);
 
             if (entity != null)
             {
                 if (role.RoleName == "Модератор")
                 {
                     var comment = _mapper.Map<Comment>(updateCommentRequest);
-                    await _commentRepository.Update(commentId, comment);
+                    await _commentRepository.Update(updateCommentRequest.CommentId, comment);
                     return IdentityResult.Success;
                 }
 
                 if (role.RoleName == "Пользователь" && initiator.UserId == entity.UserId)
                 {
                     var comment = _mapper.Map<Comment>(updateCommentRequest);
-                    await _commentRepository.Update(commentId, comment);
+                    await _commentRepository.Update(updateCommentRequest.CommentId, comment);
                     return IdentityResult.Success;
                 }
             }

@@ -60,15 +60,31 @@ namespace Blog.DAL.Repositories
         {
             await using (var context = new BlogContext(_connectionString))
             {
-                return await context.Tags.Where(t => t.TagId == tagId).FirstOrDefaultAsync();
+                return await context.Tags.Where(t => t.TagId == tagId)
+                                        .FirstOrDefaultAsync();
             }
         }
 
-        /// <summary>
-        /// Получить массивы всех тегов
-        /// </summary>
-        /// <returns></returns>
-        public async Task<Tag[]> GetTags()
+		/// <summary>
+		/// Поиск тега по Идентификкатору
+		/// </summary>
+		/// <param name="tagId"></param>
+		/// <returns></returns>
+		public async Task<Tag?> GetAllInfo(int tagId)
+		{
+			await using (var context = new BlogContext(_connectionString))
+			{
+				var tag =  await context.Tags.Include(t => t.Articles)
+										.SingleOrDefaultAsync(t => t.TagId == tagId);
+                return tag;
+			}
+		}
+
+		/// <summary>
+		/// Получить массивы всех тегов
+		/// </summary>
+		/// <returns></returns>
+		public async Task<Tag[]> GetTags()
         {
             await using (var context = new BlogContext(_connectionString))
             {

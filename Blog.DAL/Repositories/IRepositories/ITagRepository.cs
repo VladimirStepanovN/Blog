@@ -6,7 +6,8 @@ namespace Blog.DAL.Repositories.IRepositories
     {
         Task Add(Tag tag);
         Task<Tag?> Get(int tagId);
-        Task<Tag[]> GetTags();
+		Task<Tag?> GetAllInfo(int tagId);
+		Task<Tag[]> GetTags();
         Task Update(int tagId, Tag tag);
         Task Delete(int tagId);
     }

@@ -8,8 +8,9 @@ namespace Blog.BLL.Services.IServices
     {
         Task<IdentityResult> Create(AddTagRequest addTagRequest);
         Task<GetTagResponse> Get(int tagId);
-        Task<GetTagResponse[]> GetAll();
-        Task<IdentityResult> Update(int tagId, UpdateTagRequest updateTagRequest);
+		Task<GetTagFullResponse> GetAllInfo(int tagId);
+		Task<GetTagResponse[]> GetAll();
+        Task<IdentityResult> Update(UpdateTagRequest updateTagRequest);
         Task<IdentityResult> Delete(int tagId);
     }
 }

@@ -69,12 +69,24 @@ namespace Blog.BLL.Services
             return getTagResponse;
         }
 
-        /// <summary>
-        /// Логика сервиса получения всех тегов
-        /// </summary>
-        /// <param></param>
-        /// <returns></returns>
-        public async Task<GetTagResponse[]> GetAll()
+		/// <summary>
+		/// Логика сервиса получения тега по Идентификатору
+		/// </summary>
+		/// <param name="tagId"></param>
+		/// <returns></returns>
+		public async Task<GetTagFullResponse> GetAllInfo(int tagId)
+		{
+			var tag = await _tagRepository.GetAllInfo(tagId);
+			var getTagFullResponse = _mapper.Map<GetTagFullResponse>(tag);
+			return getTagFullResponse;
+		}
+
+		/// <summary>
+		/// Логика сервиса получения всех тегов
+		/// </summary>
+		/// <param></param>
+		/// <returns></returns>
+		public async Task<GetTagResponse[]> GetAll()
         {
             var tags = await _tagRepository.GetTags();
             var getTagsResponse = _mapper.Map<Tag[], GetTagResponse[]>(tags);
@@ -87,10 +99,10 @@ namespace Blog.BLL.Services
         /// <param name="tagId"></param>
         /// <param name="updateTagRequest"></param>
         /// <returns></returns>
-        public async Task<IdentityResult> Update(int tagId, UpdateTagRequest updateTagRequest)
+        public async Task<IdentityResult> Update(UpdateTagRequest updateTagRequest)
         {
             var tag = _mapper.Map<Tag>(updateTagRequest);
-            await _tagRepository.Update(tagId, tag);
+            await _tagRepository.Update(updateTagRequest.TagId, tag);
             return IdentityResult.Success;
         }
     }

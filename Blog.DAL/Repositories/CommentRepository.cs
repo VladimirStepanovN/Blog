@@ -72,7 +72,10 @@ namespace Blog.DAL.Repositories
         {
             await using (var context = new BlogContext(_connectionString))
             {
-                return await context.Comments.ToArrayAsync();
+                return await context.Comments
+                                    .Include(c => c.Article)
+                                    .Include(c => c.Author)
+                                    .ToArrayAsync();
             }
         }
 

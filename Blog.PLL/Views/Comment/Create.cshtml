@@ -1,0 +1,20 @@
+﻿﻿@using Blog.BLL.BusinessModels.Requests.CommentRequests;
+@model AddCommentRequest
+
+<div class="container-page">
+    <h2 class="title-margin">Добавление комментария</h2>
+    <form method="post" asp-controller="Comment" asp-action="Create"> <div asp-validation-summary="All" class="text-danger"></div>
+        <div style="margin-bottom: 5px">
+            <label asp-for="Content"></label><br />
+            <input class="form-control" asp-for="Content" />
+            <span asp-validation-for="Content" class="text-danger"></span>
+            <input class="form-control" asp-for="ArticleId" value="@Model.ArticleId" hidden />
+        </div>
+        <div>
+            <input class="btn btn-sm btn-primary" type="submit" value="Создать" />
+        </div>
+        <p>
+            <a method="get" asp-controller="Article" asp-action="Get" asp-route-articleId="@Model.ArticleId">Вернуться к просмотру статьи</a>
+        </p>
+    </form>
+</div>

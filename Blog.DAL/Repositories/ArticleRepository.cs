@@ -26,8 +26,20 @@ namespace Blog.DAL.Repositories
             await using (var context = new BlogContext(_connectionString))
             {
                 var entry = context.Entry(article);
-                if (entry.State == EntityState.Detached)
-                    await context.Articles.AddAsync(article);
+                if (entry.State == EntityState.Detached) context.Articles.Attach(article);
+
+                foreach (var tag in article.Tags)
+                {
+                    var existingTag = await context.Tags.FindAsync(tag.TagId);
+                    if (existingTag != null)
+                    {
+                        existingTag.Articles.Add(article);
+                    }
+                    else
+                    {
+                        context.Tags.Add(tag);
+                    }
+                }
 
                 await context.SaveChangesAsync();
             }
@@ -60,19 +72,27 @@ namespace Blog.DAL.Repositories
         {
             await using (var context = new BlogContext(_connectionString))
             {
-                return await context.Articles.Where(a => a.ArticleId == articleId).FirstOrDefaultAsync();
+                return await context.Articles.Where(a => a.ArticleId == articleId)
+                                            .Include(a => a.Tags)
+                                            .Include(a => a.Author)
+                                            .Include(a => a.Comments)
+                                            .FirstOrDefaultAsync();
             }
         }
 
-        /// <summary>
-        /// Получение списка статей
-        /// </summary>
-        /// <returns></returns>
-        public async Task<Article[]> GetArticles()
+		/// <summary>
+		/// Получение списка статей
+		/// </summary>
+		/// <returns></returns>
+		public async Task<Article[]> GetArticles()
         {
             await using (var context = new BlogContext(_connectionString))
             {
-                return await context.Articles.ToArrayAsync();
+                var articles = await context.Articles
+                                             .Include(a => a.Tags)
+                                             .Include(a => a.Author)
+                                             .ToListAsync();
+                return [.. articles];
             }
         }
 
@@ -98,13 +118,37 @@ namespace Blog.DAL.Repositories
         {
             await using (var context = new BlogContext(_connectionString))
             {
-                await context.Articles.Where(a => a.ArticleId == articleId)
-                .ExecuteUpdateAsync(s => s
-                .SetProperty(a => a.Title, a => article.Title)
-                .SetProperty(a => a.Content, a => article.Content));
+                var existingArticle = await context.Articles
+                                                    .Include(a => a.Tags)
+                                                    .Include(a => a.Author)
+                                                    .Include(a => a.Comments)
+                                                    .SingleOrDefaultAsync(a => a.ArticleId == articleId);
+
+                var tagsArticle = await context.Tags.Where(t => t.Articles.Contains(existingArticle)).ToListAsync();
+
+                foreach (var oldTag in tagsArticle)
+                {
+                    oldTag.Articles.Remove(existingArticle);
+                    context.Entry(oldTag).State = EntityState.Modified;
+                }
 
                 await context.SaveChangesAsync();
-            }      
+
+                foreach (var newTag in article.Tags)
+                {
+                    var existingTag = await context.Tags
+                                                   .Include(t => t.Articles)
+                                                   .SingleOrDefaultAsync(t => t.TagId == newTag.TagId);
+                    existingTag.Articles.Add(existingArticle);
+                    context.Entry(existingTag).State = EntityState.Modified;
+                }
+
+                existingArticle.Title = article.Title;
+                existingArticle.Content = article.Content;
+                context.Entry(existingArticle).State = EntityState.Modified;
+
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

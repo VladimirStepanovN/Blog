@@ -30,7 +30,10 @@ namespace Blog.BLL.BlogConfiguration
             CreateMap<AddTagRequest, Tag>();
             CreateMap<UpdateTagRequest, Tag>();
             CreateMap<Tag, GetTagResponse>();
-            CreateMap<User, AuthenticateResponse>();
-        }
+            CreateMap<User, AuthenticateResponse>();   
+            CreateMap<TagRequest, Tag>();
+			CreateMap<Tag, TagRequest>();
+            CreateMap<Tag, GetTagFullResponse>();
+		}
     }
 }

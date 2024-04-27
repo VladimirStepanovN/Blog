@@ -1,0 +1,38 @@
+﻿﻿@using Blog.BLL.BusinessModels.Responses.TagResponses;
+@model GetTagResponse[]
+
+@{
+	@if (Model == null || Model.Count() == 0)
+	{
+		<h5 class="card-title">Нет данных для отображения</h5>
+		<h6 class="card-title"><a method="get" asp-controller="Tag" asp-action="Create">Добавить тег</a></h6>
+	}
+	else
+	{
+		<h5 class="card-title">Все теги</h5>
+		<h6 class="card-title"><a method="get" asp-controller="Tag" asp-action="Create">Добавить тег</a></h6>
+		foreach (var tag in Model)
+		{
+			<div class="card w-75">
+				<div class="card-body">
+					<h5 style="color:blue" class="card-title">@tag.Name</h5>
+					@if (User.IsInRole("Модератор"))
+					{
+						<div>
+							<a class="btn btn-outline-secondary" method="get" asp-controller="Tag" asp-action="Get" asp-route-tagId="@tag.TagId">Просмотреть</a>
+							<a class="btn btn-outline-info button" method="get" asp-controller="Tag" asp-action="Update" asp-route-tagId="@tag.TagId">Редактировать</a>
+							<a class="btn btn-outline-danger button" method="get" asp-controller="Tag" asp-action="Delete" asp-route-tagId="@tag.TagId">Удалить</a>
+						</div>
+					}
+					else if (User.IsInRole("Пользователь"))
+					{
+						<div>
+							<a class="btn btn-outline-secondary" method="get" asp-controller="Tag" asp-action="Get" asp-route-tagId="@tag.TagId">Просмотреть</a>
+						</div>
+					}
+				</div>
+			</div>
+			<p></p>
+		}
+	}
+}
