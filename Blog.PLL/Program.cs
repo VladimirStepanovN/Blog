@@ -1,12 +1,9 @@
 using Blog.BLL.BlogConfiguration;
 using Blog.BLL.Services.IServices;
 using Blog.BLL.Services;
-using Blog.DAL.Repositories.IRepositories;
-using Blog.DAL.Repositories;
-using Blog.DAL;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using AutoMapper;
+using NLog.Web;
+using NLog.Extensions.Logging;
 
 namespace Blog.PLL
 {
@@ -19,10 +16,10 @@ namespace Blog.PLL
             //блок проброса настроек
             var connectionSettings = builder.Configuration.GetSection("ConnectionStrings").Get<ConnectionSettings>();
             builder.Services.AddSingleton(connectionSettings);
-            builder.Services.AddSingleton<IUserService, UserService>();
-            builder.Services.AddSingleton<IArticleService, ArticleService>();
-            builder.Services.AddSingleton<ICommentService, CommentService>();
-            builder.Services.AddSingleton<ITagService, TagService>();
+            builder.Services.AddTransient<IUserService, UserService>();
+            builder.Services.AddTransient<IArticleService, ArticleService>();
+            builder.Services.AddTransient<ICommentService, CommentService>();
+            builder.Services.AddTransient<ITagService, TagService>();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddAuthentication(options => options.DefaultScheme = "Cookies")
@@ -37,11 +34,18 @@ namespace Blog.PLL
                         }
                     };
                 });
-            //----------------------
+			builder.Services.AddLogging(loggingBuilder =>
+			{
+                loggingBuilder.ClearProviders();
+				loggingBuilder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+				loggingBuilder.AddConsole();
+				loggingBuilder.AddNLog();
+			});
+			//----------------------
 
 
-            //добавляем возможность маппинга моделей
-            var mapperConfig = new MapperConfiguration((v) =>
+			//добавляем возможность маппинга моделей
+			var mapperConfig = new MapperConfiguration((v) =>
             {
                 v.AddProfile(new MappingProfile());
             });
@@ -63,8 +67,8 @@ namespace Blog.PLL
             }
             else
             {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
+				app.UseDeveloperExceptionPage();
+				app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
@@ -75,6 +79,7 @@ namespace Blog.PLL
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
 
             app.MapControllerRoute(
                 name: "default",

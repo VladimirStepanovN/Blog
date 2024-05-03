@@ -46,7 +46,7 @@
 								<a class="nav-link text-dark" asp-area="" asp-controller="Article" asp-action="GetAll">Статьи</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link text-dark" asp-area="" asp-controller="Article" asp-action="GetAll">Комментарии</a>
+								<a class="nav-link text-dark" asp-area="" asp-controller="Comment" asp-action="GetAll">Комментарии</a>
 							</li>
 						}
 						@if (User.IsInRole("Пользователь"))
@@ -68,23 +68,7 @@
 						{
 							<div class="float-end">
 								<span class="badge bg-primary text-white" style="color:white">@User.Identity.Name</span>
-								<a class="btn btn-sm btn-primary" id="logoutButton">Выход</a>
-
-								<script>
-									function deleteAllCookies() {
-										const cookies = document.cookie.split(';');
-
-										for (let i = 0; i < cookies.length; i++) {
-											const cookie = cookies[i];
-											const eqPos = cookie.indexOf('=');
-											const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-											document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-										}
-									}
-
-									const logoutButton = document.getElementById('logoutButton');
-									logoutButton.addEventListener('click', deleteAllCookies);
-								</script>
+								<a class="btn btn-sm btn-primary" asp-controller="User" asp-action="Logout">Выход</a>
 							</div>
 						}
 						else

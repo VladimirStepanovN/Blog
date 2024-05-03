@@ -19,7 +19,6 @@ namespace Blog.BLL.Services
 		public UserService(ConnectionSettings settings)
         {
             _userRepository = new UserRepository(settings.DefaultConnection);
-            Console.WriteLine($"{settings.DefaultConnection} {File.Exists(settings.DefaultConnection)}");
             _roleRepository = new RoleRepository(settings.DefaultConnection);
             var mapperConfig = new MapperConfiguration((v) =>
             {

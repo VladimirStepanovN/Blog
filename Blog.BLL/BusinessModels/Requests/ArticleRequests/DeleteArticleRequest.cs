@@ -11,10 +11,11 @@ namespace Blog.BLL.BusinessModels.Requests.ArticleRequests
         [Display(Name = "Заголовок", Prompt = "Заголовок")]
         public string Title { get; set; }
 
-        [Required(ErrorMessage = "Поле контент обязательно для заполнения")]
+        [Required(ErrorMessage = "Поле Контент обязательно для заполнения")]
         [DataType(DataType.Text)]
         [Display(Name = "Контент", Prompt = "Контент")]
         public string Content { get; set; }
+
         public TagRequest[] Tags { get; set; }
     }
 }

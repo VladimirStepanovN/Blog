@@ -10,21 +10,23 @@ namespace Blog.PLL.Controllers
 	{
 		private readonly ICommentService _commentService;
 		private readonly IUserService _userService;
+		private readonly ILogger<CommentController> _logger;
 		private readonly IMapper _mapper;
 
-		public CommentController(ICommentService commentService, IUserService userService, IMapper mapper)
+		public CommentController(ICommentService commentService, IUserService userService, IMapper mapper, ILogger<CommentController> logger)
 		{
 			_commentService = commentService;
 			_userService = userService;
 			_mapper = mapper;
+			_logger = logger;
 		}
 
-		//для формы добавления комментария
 		[Authorize(Roles = "Пользователь, Модератор")]
 		[HttpGet]
 		[Route("Comment/Create")]
 		public async Task<IActionResult> Create(int articleId)
 		{
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpGet] Create action called");
 			return View(new AddCommentRequest { ArticleId = articleId });
 		}
 
@@ -39,14 +41,23 @@ namespace Blog.PLL.Controllers
 		[Route("Comment/Create")]
 		public async Task<IActionResult> Create(AddCommentRequest addCommentRequest)
 		{
-			var user = await _userService.GetByLogin(User.Identity.Name);
-			addCommentRequest.UserId = user.UserId;
-			var result = await _commentService.Create(addCommentRequest);
-			if (result.Errors.FirstOrDefault() != null)
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpPost] Create action called");
+			if (ModelState.IsValid)
 			{
-				return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+                var user = await _userService.GetByLogin(User.Identity.Name);
+                addCommentRequest.UserId = user.UserId;
+                var result = await _commentService.Create(addCommentRequest);
+                if (result.Errors.FirstOrDefault() != null)
+                {
+					_logger.LogError($"{User.Identity.Name} :: {result.Errors.FirstOrDefault().Description}");
+					return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+                }
+                return RedirectToAction("Get", "Article", new { articleId = addCommentRequest.ArticleId });
+            }
+			else
+			{
+				return View(addCommentRequest);
 			}
-			return RedirectToAction("Get", "Article", new { articleId = addCommentRequest.ArticleId });
 		}
 
 		/// <summary>
@@ -59,6 +70,7 @@ namespace Blog.PLL.Controllers
 		[Route("Comment/Update")]
 		public async Task<IActionResult> Update(int commentId)
 		{
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpGet] Update action called");
 			var getCommentResponse = await _commentService.Get(commentId);
 			var updateCommentRequest = _mapper.Map<UpdateCommentRequest>(getCommentResponse);
 			return View(updateCommentRequest);
@@ -74,12 +86,21 @@ namespace Blog.PLL.Controllers
 		[Route("Comment/Update")]
 		public async Task<IActionResult> Update(UpdateCommentRequest updateCommentRequest)
 		{
-			var result = await _commentService.Update(updateCommentRequest, User.Identity.Name);
-			if (result.Errors.FirstOrDefault() != null)
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpPost] Update action called");
+			if (ModelState.IsValid)
 			{
-				return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+                var result = await _commentService.Update(updateCommentRequest, User.Identity.Name);
+                if (result.Errors.FirstOrDefault() != null)
+                {
+					_logger.LogError($"{User.Identity.Name} :: {result.Errors.FirstOrDefault().Description}");
+					return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+                }
+                return RedirectToAction("Get", "Article", new { articleId = updateCommentRequest.ArticleId });
+            }
+			else
+			{
+				return View(updateCommentRequest);
 			}
-			return RedirectToAction("Get", "Article", new {articleId = updateCommentRequest.ArticleId});
 		}
 
 		/// <summary>
@@ -90,23 +111,9 @@ namespace Blog.PLL.Controllers
 		[Route("Comment/GetAll")]
 		public async Task<IActionResult> GetAll()
 		{
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpGet] GetAll action called");
 			var comments = await _commentService.GetAll();
 			return View(comments);
-		}
-
-		/// <summary>
-		/// Получение комментария по его идентификатору
-		/// </summary>
-		/// <param name="commentId"></param>
-		/// <returns></returns>
-		[Authorize(Roles = "Модератор")]
-		[HttpGet]
-		[Route("GetComment")]
-		public async Task<IActionResult> Get(int commentId)
-		{
-			var comment = await _commentService.Get(commentId);
-			return StatusCode(StatusCodes.Status200OK, comment);
-			//return View();
 		}
 
 		/// <summary>
@@ -119,6 +126,7 @@ namespace Blog.PLL.Controllers
 		[Route("Comment/Delete")]
 		public async Task<IActionResult> Delete(int commentId)
 		{
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpGet] Delete action called");
 			var getCommentResponse = await _commentService.Get(commentId);
 			var deleteCommentRequest = _mapper.Map<DeleteCommentRequest>(getCommentResponse);
 			return View(deleteCommentRequest);
@@ -134,12 +142,21 @@ namespace Blog.PLL.Controllers
 		[Route("Comment/Delete")]
 		public async Task<IActionResult> Delete(DeleteCommentRequest deleteCommentRequest)
 		{
-			var result = await _commentService.Delete(deleteCommentRequest.CommentId, User.Identity.Name);
-			if (result.Errors.FirstOrDefault() != null)
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpPost] Delete action called");
+			if (ModelState.IsValid)
 			{
-				return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+                var result = await _commentService.Delete(deleteCommentRequest.CommentId, User.Identity.Name);
+                if (result.Errors.FirstOrDefault() != null)
+                {
+					_logger.LogError($"{User.Identity.Name} :: {result.Errors.FirstOrDefault().Description}");
+					return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+                }
+                return RedirectToAction("Get", "Article", new { articleId = deleteCommentRequest.ArticleId });
+            }
+			else
+			{
+				return View(deleteCommentRequest);
 			}
-			return RedirectToAction("Get", "Article", new { articleId = deleteCommentRequest.ArticleId });
 		}
 	}
 }

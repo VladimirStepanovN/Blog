@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Blog.BLL.BusinessModels.Requests.TagRequests;
-using Blog.BLL.BusinessModels.Responses.TagResponses;
 using Blog.BLL.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,12 +9,14 @@ namespace Blog.PLL.Controllers
     public class TagController : Controller
     {
         private readonly ITagService _tagService;
-        private readonly IMapper _mapper;
+		private readonly ILogger<TagController> _logger;
+		private readonly IMapper _mapper;
 
-        public TagController(ITagService tagService, IMapper mapper)
+        public TagController(ITagService tagService, IMapper mapper, ILogger<TagController> logger)
         {
             _tagService = tagService;
             _mapper = mapper;
+            _logger = logger;
         }
 
         /// <summary>
@@ -28,7 +29,8 @@ namespace Blog.PLL.Controllers
         [Route("Tag/Create")]
         public async Task<IActionResult> Create()
         {
-            return View();
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpGet] Create action called");
+			return View();
         }
 
 
@@ -42,12 +44,21 @@ namespace Blog.PLL.Controllers
         [Route("Tag/Create")]
         public async Task<IActionResult> Create(AddTagRequest addTagRequest)
         {
-            var result = await _tagService.Create(addTagRequest);
-            if (result.Errors.FirstOrDefault() != null)
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpPost] Create action called");
+			if (ModelState.IsValid)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+                var result = await _tagService.Create(addTagRequest);
+                if (result.Errors.FirstOrDefault() != null)
+                {
+					_logger.LogError($"{User.Identity.Name} :: {result.Errors.FirstOrDefault().Description}");
+					return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+                }
+                return RedirectToAction("GetAll", "Tag");
             }
-            return RedirectToAction("GetAll", "Tag");
+            else
+            {
+                return View(addTagRequest);
+            }
         }
 
         /// <summary>
@@ -60,7 +71,8 @@ namespace Blog.PLL.Controllers
         [Route("Tag/Update")]
         public async Task<IActionResult> Update(int tagId)
         {
-            var tag = await _tagService.Get(tagId);
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpGet] Update action called");
+			var tag = await _tagService.Get(tagId);
             var view = _mapper.Map<UpdateTagRequest>(tag);
             return View(view);
         }
@@ -68,7 +80,6 @@ namespace Blog.PLL.Controllers
         /// <summary>
         /// Редактирование тега
         /// </summary>
-        /// <param name="tagId"></param>
         /// <param name="updateTagRequest"></param>
         /// <returns></returns>
         [Authorize(Roles = "Модератор")]
@@ -76,14 +87,22 @@ namespace Blog.PLL.Controllers
         [Route("Tag/Update")]
         public async Task<IActionResult> Update(UpdateTagRequest updateTagRequest)
         {
-            var result = await _tagService.Update(updateTagRequest);
-            if (result.Errors.FirstOrDefault() != null)
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpPost] Update action called");
+			if (ModelState.IsValid)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+                var result = await _tagService.Update(updateTagRequest);
+                if (result.Errors.FirstOrDefault() != null)
+                {
+					_logger.LogError($"{User.Identity.Name} :: {result.Errors.FirstOrDefault().Description}");
+					return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+                }
+                return RedirectToAction("Get", "Tag", new { tagId = updateTagRequest.TagId });
             }
-            return StatusCode(StatusCodes.Status200OK, updateTagRequest);
-            //return View();
-        }
+            else
+            {
+                return View(updateTagRequest);
+            }
+		}
 
         /// <summary>
         /// Получение списка всех тегов
@@ -93,7 +112,8 @@ namespace Blog.PLL.Controllers
         [Route("Tag/GetAll")]
         public async Task<IActionResult> GetAll()
         {
-            var tags = await _tagService.GetAll();
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpGet] GetAll action called");
+			var tags = await _tagService.GetAll();
             return View(tags);
         }
 
@@ -107,7 +127,8 @@ namespace Blog.PLL.Controllers
         [Route("Tag/Get")]
         public async Task<IActionResult> Get(int tagId)
         {
-            var getTagFullResponse = await _tagService.GetAllInfo(tagId);
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpGet] Get action called");
+			var getTagFullResponse = await _tagService.GetAllInfo(tagId);
             return View(getTagFullResponse);
         }
 
@@ -121,7 +142,8 @@ namespace Blog.PLL.Controllers
         [Route("Tag/Delete")]
         public async Task<IActionResult> Delete(int tagId)
         {
-            var tag = await _tagService.Get(tagId);
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpGet] Delete action called");
+			var tag = await _tagService.Get(tagId);
             var view = _mapper.Map<DeleteTagRequest>(tag);
             return View(view);
         }
@@ -129,20 +151,28 @@ namespace Blog.PLL.Controllers
         /// <summary>
         /// Удаление тега
         /// </summary>
-        /// /// <param name="tagId"></param>
+        /// /// <param name="deleteTagRequest"></param>
         /// <returns></returns>
         [Authorize(Roles = "Модератор")]
         [HttpPost]
         [Route("Tag/Delete")]
         public async Task<IActionResult> Delete(DeleteTagRequest deleteTagRequest)
         {
-            var result = await _tagService.Delete(deleteTagRequest.TagId);
-            if (result.Errors.FirstOrDefault() != null)
+			_logger.LogInformation($"{User.Identity.Name} :: [HttpPost] Delete action called");
+			if (ModelState.IsValid)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+                var result = await _tagService.Delete(deleteTagRequest.TagId);
+                if (result.Errors.FirstOrDefault() != null)
+                {
+					_logger.LogError($"{User.Identity.Name} :: {result.Errors.FirstOrDefault().Description}");
+					return StatusCode(StatusCodes.Status400BadRequest, result.Errors.FirstOrDefault().Description);
+                }
+                return RedirectToAction("GetAll", "Tag");
             }
-            //return StatusCode(StatusCodes.Status200OK, $"$Тег {deleteTagRequest.TagId} удален");
-            return RedirectToAction("GetAll", "Tag");
+            else
+            {
+                return View(deleteTagRequest);
+            }
         }
     }
 }
