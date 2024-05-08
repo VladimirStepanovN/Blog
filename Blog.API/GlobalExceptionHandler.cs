@@ -6,6 +6,13 @@ namespace Blog.API
 {
     public class GlobalExceptionHandler : ExceptionFilterAttribute
     {
+        private readonly ILogger<GlobalExceptionHandler> _logger;
+
+        public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
+        {
+            _logger = logger;
+        }
+
         public override void OnException(ExceptionContext context)
         {
             // Проверяем, что исключение не было обработано ранее
@@ -15,8 +22,7 @@ namespace Blog.API
                 context.HttpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
                 // Логируем исключение
-                // Здесь можно добавить логирование в файл, базу данных или другой сервис
-                Console.WriteLine($"An error occurred: {context.Exception.Message}");
+                _logger.LogError($"An error occurred: {context.Exception.Message}");
 
                 // Можно также отправить сообщение об ошибке клиенту
                 // Здесь можно добавить отправку JSON с информацией об ошибке
