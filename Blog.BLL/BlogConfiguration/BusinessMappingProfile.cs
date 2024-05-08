@@ -3,11 +3,11 @@ using Blog.DAL.Entities;
 using AutoMapper;
 using Blog.BLL.BusinessModels.Responses.UserResponses;
 using Blog.BLL.BusinessModels.Requests.ArticleRequests;
-using Blog.BLL.BusinessModels.Responses.ArticleResponses;
 using Blog.BLL.BusinessModels.Requests.CommentRequests;
 using Blog.BLL.BusinessModels.Responses.CommentResponses;
 using Blog.BLL.BusinessModels.Requests.TagRequests;
 using Blog.BLL.BusinessModels.Responses.TagResponses;
+using Blog.BLL.BusinessModels.Responses.ArticleResponses;
 
 namespace Blog.BLL.BlogConfiguration
 {
@@ -34,6 +34,8 @@ namespace Blog.BLL.BlogConfiguration
             CreateMap<TagRequest, Tag>();
 			CreateMap<Tag, TagRequest>();
             CreateMap<Tag, GetTagFullResponse>();
+            CreateMap<User, GetUserRequest>();
+            CreateMap<Comment, GetCommentRequest>();
 		}
     }
 }

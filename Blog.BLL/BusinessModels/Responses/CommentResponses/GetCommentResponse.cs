@@ -1,4 +1,5 @@
-﻿using Blog.DAL.Entities;
+﻿using Blog.BLL.BusinessModels.Requests.UsersRequests;
+using Blog.DAL.Entities;
 
 namespace Blog.BLL.BusinessModels.Responses.CommentResponses
 {
@@ -8,7 +9,6 @@ namespace Blog.BLL.BusinessModels.Responses.CommentResponses
 		public string Content { get; set; }
 		public int UserId { get; set; }
 		public int ArticleId { get; set; }
-		public virtual User Author { get; set; }
-		public virtual Article Article { get; set; }
+		public virtual GetUserRequest Author { get; set; }
 	}
 }
